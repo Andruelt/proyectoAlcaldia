@@ -1,0 +1,26 @@
+{
+  "name": "proyecto-alcaldia",
+  "version": "1.0.0",
+  "description": "Proyecto con arquitectura MVC usando Electron",
+  "main": "dist/main/main.js",
+  "scripts": {
+    "build": "tsc && npm run copy-views && npm run bundle-ui",
+    "copy-views": "node -e \"require('fs').cpSync('src/view','dist/view',{recursive:true})\"",
+    "bundle-ui": "esbuild src/view/ui/index.js --bundle --outfile=dist/view/ui.bundle.js --format=iife",
+    "start": "npm run build && electron .",
+    "dev": "npm run build && electron .",
+    "seed": "npm run build && electron dist/database/seed.js",
+    "test": "npm run build && electron dist/test/test-create.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "sql.js": "^1.11.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "electron": "^33.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.0.0"
+  }
+}

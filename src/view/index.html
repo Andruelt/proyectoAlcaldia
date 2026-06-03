@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com">
+    <title>Proyecto Alcaldía</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="app-title">Alcaldía</h1>
+            </div>
+            <nav class="sidebar-nav">
+                <nav-menu-item icon="home" text="Inicio" view="inicio" active></nav-menu-item>
+                <nav-menu-item icon="mapPin" text="Direcciones" view="direcciones"></nav-menu-item>
+                <nav-menu-item icon="alertTriangle" text="Incidencias" view="incidencias"></nav-menu-item>
+                <nav-menu-item icon="briefcase" text="Actividades" view="actividades"></nav-menu-item>
+                <nav-menu-item icon="fileText" text="Informe técnico" view="informe"></nav-menu-item>
+            </nav>
+        </aside>
+
+        <main class="main-content" id="main-content">
+            <div id="view-inicio" class="page-view active">
+                <header class="content-header">
+                    <h2 class="page-title">Dashboard</h2>
+                </header>
+                <div class="content-body">
+                    <div style="display:flex;gap:12px;margin-bottom:20px;align-items:flex-end;">
+                        <form-select id="dashboard-periodo" label="Período" style="flex:1;max-width:240px;">
+                            <option value="semanal">Semanal</option>
+                            <option value="mensual" selected>Mensual</option>
+                            <option value="anual">Anual</option>
+                            <option value="rango">Rango personalizado</option>
+                        </form-select>
+                        <div id="rango-fechas" style="display:none;gap:12px;align-items:flex-end;">
+                            <form-input id="rango-inicio" type="date" label="Desde"></form-input>
+                            <form-input id="rango-fin" type="date" label="Hasta"></form-input>
+                            <button-primary id="btn-aplicar-rango" text="APLICAR"></button-primary>
+                        </div>
+                    </div>
+                    <div class="stats-grid">
+                        <stat-card id="stat-actividades" title="Actividades" value="0" icon="checkCircle"></stat-card>
+                    </div>
+                    <div id="dashboard-actividades" style="margin-top:24px;"></div>
+                </div>
+            </div>
+
+            <div id="view-direcciones" class="page-view">
+                <header class="content-header">
+                    <h2 class="page-title">Direcciones</h2>
+                </header>
+                <div class="content-body">
+                    <form class="activity-form" id="form-direccion" style="margin-bottom: 24px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-end;">
+                            <form-input label="Nueva Dirección" placeholder="Ingrese la dirección" id="nombre-direccion" style="flex: 1;"></form-input>
+                            <button-primary text="AGREGAR"></button-primary>
+                        </div>
+                    </form>
+                    <div class="crud-list" id="direcciones-list"></div>
+                </div>
+            </div>
+
+            <div id="view-incidencias" class="page-view">
+                <header class="content-header">
+                    <h2 class="page-title">Incidencias</h2>
+                </header>
+                <div class="content-body">
+                    <form class="activity-form" id="form-incidencia" style="margin-bottom: 24px;">
+                        <div style="display: flex; gap: 12px; align-items: flex-end;">
+                            <form-input label="Nueva Incidencia" placeholder="Ingrese la incidencia" id="nombre-incidencia" style="flex: 1;"></form-input>
+                            <button-primary text="AGREGAR"></button-primary>
+                        </div>
+                    </form>
+                    <div class="crud-list" id="incidencias-list"></div>
+                </div>
+            </div>
+
+            <div id="view-actividades" class="page-view">
+                <header class="content-header" style="display:flex; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <h2 class="page-title" style="margin:0;">Actividades</h2>
+                        <div class="layout-toggle">
+                            <button class="layout-btn active" data-layout="cards" title="Vista Cards">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                            </button>
+                            <button class="layout-btn" data-layout="list" title="Vista Lista">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                            </button>
+                            <button class="layout-btn" data-layout="calendar" title="Vista Calendario">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    <button id="btn-crear-actividad" class="btn-create">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                        Crear Actividad
+                    </button>
+                </header>
+                <div class="content-body">
+                    <div id="actividad-warning" class="empty-state" style="display:none; padding: 24px; margin-bottom: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p>Debe registrar al menos una dirección y una incidencia antes de crear una actividad.</p>
+                    </div>
+                    <div class="crud-list" id="actividades-list"></div>
+                    <table class="lista-actividades" id="actividades-list-table" style="display:none;">
+                        <thead>
+                            <tr>
+                                <th>Dirección</th>
+                                <th>Incidencia</th>
+                                <th>Descripción</th>
+                                <th>Fecha</th>
+                                <th style="width:1%;white-space:nowrap;"></th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                    <calendar-grid id="calendar-view" style="display:none;"></calendar-grid>
+                </div>
+            </div>
+
+            <div id="view-informe" class="page-view">
+                <header class="content-header">
+                    <h2 class="page-title">Informe Técnico</h2>
+                </header>
+                <div class="content-body">
+                    <div style="display:flex;gap:12px;margin-bottom:20px;align-items:flex-end;">
+                        <form-select id="filter-direccion" label="Filtrar por Dirección" style="flex:1;"></form-select>
+                        <button-primary id="btn-imprimir" text="IMPRIMIR" style="flex-shrink:0;"></button-primary>
+                    </div>
+                    <div class="crud-list" id="informe-table"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="ui.bundle.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

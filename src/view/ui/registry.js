@@ -1,0 +1,31 @@
+'use strict';
+
+import { StatCard } from './components/stat-card.js';
+import { LineChart } from './components/line-chart.js';
+import { CandleChart } from './components/candle-chart.js';
+import { BarChart } from './components/bar-chart.js';
+import { NavMenuItem } from './components/nav-menu-item.js';
+import { FormDate } from './components/form-date.js';
+import { FormInput } from './components/form-input.js';
+import { FormTextarea } from './components/form-textarea.js';
+import { FormToggle } from './components/form-toggle.js';
+import { FormSelect } from './components/form-select.js';
+import { ButtonPrimary } from './components/button-primary.js';
+import { ToastContainer } from './components/toast-container.js';
+import { ModalDialog } from './components/modal-dialog.js';
+import { CalendarGrid } from './components/calendar-grid.js';
+
+customElements.define('stat-card', StatCard);
+customElements.define('line-chart', LineChart);
+customElements.define('candle-chart', CandleChart);
+customElements.define('bar-chart', BarChart);
+customElements.define('nav-menu-item', NavMenuItem);
+customElements.define('form-date', FormDate);
+customElements.define('form-input', FormInput);
+customElements.define('form-textarea', FormTextarea);
+customElements.define('form-toggle', FormToggle);
+customElements.define('form-select', FormSelect);
+customElements.define('button-primary', ButtonPrimary);
+customElements.define('toast-container', ToastContainer);
+customElements.define('modal-dialog', ModalDialog);
+customElements.define('calendar-grid', CalendarGrid);
