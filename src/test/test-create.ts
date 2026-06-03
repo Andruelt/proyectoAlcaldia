@@ -2,6 +2,9 @@ import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { DatabaseAdapter } from '../database/database';
+import { DireccionesAdapter } from '../database/direcciones-adapter';
+import { IncidenciasAdapter } from '../database/incidencias-adapter';
+import { ActividadesAdapter } from '../database/actividades-adapter';
 
 async function runTests(): Promise<void> {
     await app.whenReady();
@@ -22,65 +25,69 @@ async function runTests(): Promise<void> {
         await db.connect('test_create.db');
         db.initTables();
 
+        const direcciones = new DireccionesAdapter(db);
+        const incidencias = new IncidenciasAdapter(db);
+        const actividades = new ActividadesAdapter(db);
+
         console.log('\n=== Create: Direcciones ===');
-        const dirId = db.addDireccion('Dirección de Test');
+        const dirId = direcciones.add('Dirección de Test');
         assert(typeof dirId === 'string' && dirId.length > 0, 'addDireccion retorna ID válido');
 
-        const dirs = db.getDirecciones();
+        const dirs = direcciones.getAll();
         assert(dirs.length === 1, 'getDirecciones retorna 1 registro');
         assert(dirs[0].nombre === 'Dirección de Test', 'getDirecciones retorna nombre correcto');
         assert(dirs[0].id === dirId, 'getDirecciones retorna ID correcto');
 
         try {
-            db.addDireccion('');
+            direcciones.add('');
             assert(false, 'addDireccion("") debería lanzar error');
         } catch {
             assert(true, 'addDireccion("") lanza error');
         }
 
         try {
-            db.addDireccion('   ');
+            direcciones.add('   ');
             assert(false, 'addDireccion("   ") debería lanzar error');
         } catch {
             assert(true, 'addDireccion("   ") lanza error');
         }
 
         console.log('\n=== Create: Incidencias ===');
-        const incId = db.addIncidencia('Incidencia de Test');
+        const incId = incidencias.add('Incidencia de Test');
         assert(typeof incId === 'string' && incId.length > 0, 'addIncidencia retorna ID válido');
 
-        const incs = db.getIncidencias();
+        const incs = incidencias.getAll();
         assert(incs.length === 1, 'getIncidencias retorna 1 registro');
         assert(incs[0].nombre === 'Incidencia de Test', 'getIncidencias retorna nombre correcto');
 
         console.log('\n=== Create: Actividades ===');
-        const actId = db.addActividad(dirId, incId, 'Actividad de test');
+        const actId = actividades.add(dirId, incId, 'Actividad de test');
         assert(typeof actId === 'string' && actId.length > 0, 'addActividad retorna ID válido');
 
-        const acts = db.getActividades();
+        const acts = actividades.getAll();
         assert(acts.length === 1, 'getActividades retorna 1 registro');
         assert(acts[0].direccion === 'Dirección de Test', 'getActividades retorna dirección en JOIN');
         assert(acts[0].incidencia === 'Incidencia de Test', 'getActividades retorna incidencia en JOIN');
 
         // Soft-delete cascade: actividad no debe aparecer si su dirección fue eliminada
-        db.deleteDireccion(dirId);
-        const actsAfter = db.getActividades();
+        direcciones.delete(dirId);
+        const actsAfter = actividades.getAll();
         assert(actsAfter.length === 0, 'Actividad oculta al eliminar su dirección (soft-delete cascade)');
 
         console.log('\n=== Update ===');
-        const dirId2 = db.addDireccion('Original');
-        db.updateDireccion(dirId2, 'Actualizada');
-        const dirs2 = db.getDirecciones();
+        const dirId2 = direcciones.add('Original');
+        direcciones.update(dirId2, 'Actualizada');
+        const dirs2 = direcciones.getAll();
         assert(dirs2.find(d => d.id === dirId2)?.nombre === 'Actualizada', 'updateDireccion cambia el nombre');
 
-        const incId2 = db.addIncidencia('Original inc');
-        db.updateIncidencia(incId2, 'Actualizada inc');
-        const incs2 = db.getIncidencias();
+        const incId2 = incidencias.add('Original inc');
+        incidencias.update(incId2, 'Actualizada inc');
+        const incs2 = incidencias.getAll();
         assert(incs2.find(i => i.id === incId2)?.nombre === 'Actualizada inc', 'updateIncidencia cambia el nombre');
 
         console.log('\n=== Soft Delete ===');
-        db.deleteIncidencia(incId2);
-        const incs3 = db.getIncidencias();
+        incidencias.delete(incId2);
+        const incs3 = incidencias.getAll();
         assert(incs3.every(i => i.id !== incId2), 'deleteIncidencia oculta registro (soft-delete)');
 
         db.close();
