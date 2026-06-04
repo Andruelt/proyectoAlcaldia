@@ -18,6 +18,8 @@ const electronAPI = {
     export: {
         pdf: (data: { actividades: any[]; filterLabel: string }) => ipcRenderer.invoke('export-pdf', data),
         word: (data: { actividades: any[]; filterLabel: string }) => ipcRenderer.invoke('export-word', data),
+        informeTecnico: (datos: Record<string, string>) => ipcRenderer.invoke('generate-informe-tecnico', datos),
+        informeTecnicoPdf: (datos: Record<string, string>) => ipcRenderer.invoke('generate-informe-tecnico-pdf', datos),
     },
 };
 

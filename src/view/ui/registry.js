@@ -16,6 +16,7 @@ import { ButtonAction } from './components/button-action.js';
 import { ToastContainer } from './components/toast-container.js';
 import { ModalDialog } from './components/modal-dialog.js';
 import { CalendarGrid } from './components/calendar-grid.js';
+import { KeyValueEditor } from './components/key-value-editor.js';
 import { TitleBar } from './components/title-bar.js';
 import { ToolTip } from './components/tool-tip.js';
 
@@ -37,3 +38,4 @@ customElements.define('button-action', ButtonAction);
 customElements.define('toast-container', ToastContainer);
 customElements.define('modal-dialog', ModalDialog);
 customElements.define('calendar-grid', CalendarGrid);
+customElements.define('key-value-editor', KeyValueEditor);

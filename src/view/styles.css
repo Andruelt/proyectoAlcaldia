@@ -819,20 +819,381 @@ th.sortable.sorted-desc::after {
 .lista-actividades tbody tr:hover { background: var(--bg-secondary); }
 
 @media print {
-    .sidebar, .content-header, #filter-direccion, #btn-imprimir, .crud-actions, .crud-edit-inline {
+    .sidebar, .content-header, .informe-editor-panel, .informe-list-panel, .crud-actions, .crud-edit-inline {
         display: none !important;
     }
     .main-content {
         margin-left: 0 !important;
-    }
-    .informe-table {
-        width: 100%;
     }
 }
 
 @keyframes analyticsSectionFade {
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Informe Editor ──────────────────────────────────────────────────── */
+
+.informe-editor-layout {
+    display: flex;
+    gap: 0;
+    height: calc(100vh - 60px);
+}
+
+.informe-list-panel {
+    flex: 1;
+    min-width: 0;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.informe-editor-panel {
+    display: none;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    background: var(--bg-secondary);
+    flex-direction: row;
+}
+
+.informe-editor-left {
+    flex: 0 0 380px;
+    min-width: 320px;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border-color);
+}
+
+.informe-editor-right {
+    flex: 1;
+    min-width: 0;
+    padding: 16px 24px;
+    overflow-y: auto;
+    background: var(--bg-secondary);
+    display: flex;
+    flex-direction: column;
+}
+
+.informe-editor-layout.has-editor .informe-list-panel {
+    display: none;
+}
+
+.informe-editor-layout.has-editor .informe-editor-panel {
+    display: flex;
+}
+
+.informe-panel-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+}
+
+/* ─── Activity List ────────────────────────────────────────────────────── */
+
+.informe-actividades-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.informe-act-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: box-shadow 0.15s;
+    gap: 10px;
+}
+
+.informe-act-item:hover {
+    box-shadow: 0 1px 6px rgba(15,23,42,0.06);
+}
+
+.informe-act-item.active {
+    border-color: var(--accent-color);
+    background: #f8fafc;
+}
+
+.informe-act-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.informe-act-info {
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+}
+
+.informe-act-dir {
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.informe-act-inc {
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.informe-act-desc {
+    font-size: 12px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 240px;
+}
+
+.informe-act-fecha {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+}
+
+/* ─── Export Dropdown ──────────────────────────────────────────────────── */
+
+.export-dropdown {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.export-dropdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-family: var(--font-family);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.export-dropdown-toggle:hover {
+    background: var(--border-color);
+    color: var(--text-primary);
+}
+
+.export-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 4px;
+    min-width: 140px;
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(15,23,42,0.12);
+    z-index: 10;
+    overflow: hidden;
+}
+
+.export-dropdown-menu.open { display: block; }
+
+.export-dropdown-menu button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 9px 14px;
+    border: none;
+    background: transparent;
+    font-size: 12px;
+    font-family: var(--font-family);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: background 0.1s;
+    text-align: left;
+}
+
+.export-dropdown-menu button:hover {
+    background: var(--bg-secondary);
+}
+
+.export-dropdown-menu button + button {
+    border-top: 1px solid var(--border-color);
+}
+
+/* ─── Pagination ───────────────────────────────────────────────────────── */
+
+.informe-pagination {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0;
+}
+
+.informe-pagination.visible { display: flex; }
+
+.informe-pagination button {
+    padding: 6px 14px;
+    font-size: 12px;
+    font-family: var(--font-family);
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--bg-white);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.informe-pagination button:hover:not(:disabled) {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.informe-pagination button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.informe-pagination .page-indicator {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 0 4px;
+}
+
+/* ─── Preview Document ────────────────────────────────────────────────── */
+
+.informe-preview-doc {
+    display: flex;
+    justify-content: center;
+    overflow: auto;
+    flex: 1;
+}
+
+.preview-page {
+    width: 210mm;
+    min-height: 297mm;
+    background: #fff;
+    box-shadow: 0 2px 16px rgba(15,23,42,0.1);
+    border-radius: 4px;
+    padding: 25mm 20mm;
+    font-family: var(--font-family);
+    font-size: 12px;
+    line-height: 1.5;
+    color: #1e293b;
+    box-sizing: border-box;
+}
+
+.preview-fecha {
+    text-align: right;
+    font-weight: 700;
+    font-size: 12px;
+    color: #0f172a;
+    margin-bottom: 12px;
+}
+
+.preview-title {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.preview-number {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 20px;
+}
+
+.preview-section {
+    margin-bottom: 16px;
+}
+
+.preview-label {
+    font-weight: 700;
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
+.preview-value {
+    font-weight: 600;
+    font-size: 12px;
+    color: #0f172a;
+    margin-bottom: 1px;
+}
+
+.preview-paragraph {
+    font-size: 12px;
+    margin-bottom: 12px;
+    color: #334155;
+    line-height: 1.5;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    font-size: 11px;
+}
+
+.preview-table th {
+    background: #f8fafc;
+    text-align: center;
+    padding: 6px 10px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #64748b;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+}
+
+.preview-table td {
+    padding: 6px 10px;
+    border: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: top;
+}
+
+.preview-table .preview-bold {
+    font-weight: 700;
+}
+
+.preview-firmas {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10px;
+    text-align: center;
+}
+
+.preview-firmas td {
+    padding: 8px 12px;
+    color: #0f172a;
+    font-weight: 600;
+}
+
+.preview-spacer {
+    height: 20px;
 }
 
 .analytics-section-title {

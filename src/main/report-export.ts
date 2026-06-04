@@ -254,3 +254,308 @@ export async function generateWord(
     const buffer = await Packer.toBuffer(doc);
     return Buffer.from(buffer);
 }
+
+export async function generateInformeTecnico(datos: Record<string, string>): Promise<Buffer> {
+    const g = (key: string, fallback: string = '') => datos[key] || fallback;
+
+    const doc = new Document({
+        styles: {
+            default: {
+                document: {
+                    run: { font: 'Segoe UI', size: 22, color: '1E293B' },
+                    paragraph: { spacing: { after: 120 } }
+                }
+            }
+        },
+        sections: [{
+            properties: {
+                page: {
+                    margin: { top: 1440, bottom: 1440, left: 1440, right: 1440 }
+                }
+            },
+            children: [
+                new Paragraph({
+                    alignment: AlignmentType.RIGHT,
+                    children: [new TextRun({ text: g('fecha'), bold: true, size: 22 })],
+                    spacing: { after: 200 }
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [new TextRun({ text: 'INFORME TÉCNICO', bold: true, size: 36 })],
+                    spacing: { after: 80 }
+                }),
+                new Paragraph({
+                    alignment: AlignmentType.CENTER,
+                    children: [new TextRun({ text: `N° ${g('numeroInforme')}`, bold: true, size: 28 })],
+                    spacing: { after: 200 }
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({
+                    children: [new TextRun({ text: 'CIUDADANO:', bold: true, size: 22 })],
+                    spacing: { after: 40 }
+                }),
+                new Paragraph({
+                    children: [new TextRun({ text: g('destinatarioNombre'), bold: true, size: 22 })],
+                    spacing: { after: 40 }
+                }),
+                new Paragraph({
+                    children: [new TextRun({ text: g('destinatarioCargo'), bold: true, size: 22 })],
+                    spacing: { after: 40 }
+                }),
+                new Paragraph({
+                    children: [new TextRun({ text: g('destinatarioDpto'), bold: true, size: 22 })],
+                    spacing: { after: 200 }
+                }),
+                new Paragraph({
+                    children: [new TextRun({
+                        text: 'Luego de extenderle un cordial saludo me dirijo a usted con la finalidad de dar a conocer el diagnostico obtenido de la revisión de los siguientes equipos:',
+                        size: 22
+                    })],
+                    spacing: { after: 200 }
+                }),
+                new Table({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    borders: {
+                        top: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' },
+                        bottom: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' },
+                        left: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' },
+                        right: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' },
+                        insideHorizontal: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' },
+                        insideVertical: { style: BorderStyle.SINGLE, size: 1, color: 'E2E8F0' }
+                    },
+                    rows: [
+                        new TableRow({
+                            tableHeader: true,
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'Código del Bien', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    shading: { fill: 'F8FAFC' }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'Descripción', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    shading: { fill: 'F8FAFC' }
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'Requerimiento', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })],
+                                    shading: { fill: 'F8FAFC' }
+                                })
+                            ]
+                        }),
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({ children: [new TextRun({ text: g('codigoBien'), size: 18 })] })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({ children: [new TextRun({ text: g('descripcion'), size: 18 })] })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({ children: [new TextRun({ text: g('requerimiento'), size: 18 })] })]
+                                })
+                            ]
+                        }),
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'Diagnostico:', bold: true, size: 18 })]
+                                    })]
+                                }),
+                                new TableCell({
+                                    columnSpan: 2,
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: g('diagnostico'), size: 18 })]
+                                    })]
+                                })
+                            ]
+                        })
+                    ]
+                }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '', spacing: { after: 200 } }),
+                new Paragraph({ children: [new TextRun({ text: 'Sin más a que hacer referencia.', size: 22 })], spacing: { after: 200 } }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Paragraph({ text: '' }),
+                new Table({
+                    width: { size: 100, type: WidthType.PERCENTAGE },
+                    borders: {
+                        top: { style: BorderStyle.NONE, size: 0 },
+                        bottom: { style: BorderStyle.NONE, size: 0 },
+                        left: { style: BorderStyle.NONE, size: 0 },
+                        right: { style: BorderStyle.NONE, size: 0 },
+                        insideHorizontal: { style: BorderStyle.NONE, size: 0 },
+                        insideVertical: { style: BorderStyle.NONE, size: 0 }
+                    },
+                    rows: [
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'INFORMATICA Y SISTEMA', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'DIVISION DE REGISTRO...', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'RECIBIDO POR:', bold: true, size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                })
+                            ]
+                        }),
+                        new TableRow({
+                            children: [
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'FIRMA: _______________', size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'FIRMA: _______________', size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                }),
+                                new TableCell({
+                                    children: [new Paragraph({
+                                        children: [new TextRun({ text: 'FIRMA: _______________', size: 18 })],
+                                        alignment: AlignmentType.CENTER
+                                    })]
+                                })
+                            ]
+                        })
+                    ]
+                })
+            ]
+        }]
+    });
+
+    const buffer = await Packer.toBuffer(doc);
+    return Buffer.from(buffer);
+}
+
+function buildInformeTecnicoHtml(datos: Record<string, string>): string {
+    const g = (key: string, fb: string = '') => escapeHtml(datos[key] || fb);
+
+    return `<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    @page { margin: 25mm 20mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: 'Segoe UI', 'Plus Jakarta Sans', system-ui, sans-serif;
+        color: #1e293b; font-size: 12px; line-height: 1.5;
+    }
+    .fecha { text-align: right; font-weight: 700; font-size: 12px; margin-bottom: 20px; }
+    .title { text-align: center; font-size: 20px; font-weight: 700; margin-bottom: 4px; color: #0f172a; }
+    .number { text-align: center; font-size: 15px; font-weight: 700; margin-bottom: 24px; color: #0f172a; }
+    .ciudadano { font-weight: 700; font-size: 12px; margin-bottom: 2px; }
+    .dest-info { font-weight: 600; font-size: 12px; color: #0f172a; margin-bottom: 1px; }
+    .section { margin-bottom: 16px; }
+    .intro { font-size: 12px; margin-bottom: 16px; line-height: 1.5; }
+    table.data { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 11px; }
+    table.data th { background: #f8fafc; text-align: center; padding: 8px 10px; font-size: 10px; text-transform: uppercase; color: #64748b; font-weight: 600; border: 1px solid #e2e8f0; }
+    table.data td { padding: 8px 10px; border: 1px solid #e2e8f0; color: #334155; vertical-align: top; }
+    table.data .bold { font-weight: 700; }
+    table.firmas { width: 100%; border-collapse: collapse; font-size: 11px; text-align: center; margin-top: 36px; }
+    table.firmas td { padding: 8px 12px; color: #0f172a; font-weight: 600; }
+    .spacer { height: 20px; }
+</style>
+</head>
+<body>
+    <div class="fecha">${g('fecha')}</div>
+    <div class="title">INFORME TÉCNICO</div>
+    <div class="number">N° ${g('numeroInforme')}</div>
+    <div class="section">
+        <div class="ciudadano">CIUDADANO:</div>
+        <div class="dest-info">${g('destinatarioNombre')}</div>
+        <div class="dest-info">${g('destinatarioCargo')}</div>
+        <div class="dest-info">${g('destinatarioDpto')}</div>
+    </div>
+    <div class="intro">Luego de extenderle un cordial saludo me dirijo a usted con la finalidad de dar a conocer el diagnostico obtenido de la revisión de los siguientes equipos:</div>
+    <table class="data">
+        <thead>
+            <tr>
+                <th>Código del Bien</th>
+                <th>Descripción</th>
+                <th>Requerimiento</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>${g('codigoBien')}</td>
+                <td>${g('descripcion')}</td>
+                <td>${g('requerimiento')}</td>
+            </tr>
+            <tr>
+                <td class="bold">Diagnostico:</td>
+                <td colspan="2">${g('diagnostico')}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="spacer"></div>
+    <div style="font-size:12px;">Sin más a que hacer referencia.</div>
+    <div class="spacer"></div>
+    <div class="spacer"></div>
+    <table class="firmas">
+        <tr>
+            <td>INFORMATICA Y SISTEMA</td>
+            <td>DIVISION DE REGISTRO...</td>
+            <td>RECIBIDO POR:</td>
+        </tr>
+        <tr>
+            <td>FIRMA: _______________</td>
+            <td>FIRMA: _______________</td>
+            <td>FIRMA: _______________</td>
+        </tr>
+    </table>
+</body>
+</html>`;
+}
+
+export async function generateInformeTecnicoPdf(datos: Record<string, string>): Promise<Buffer> {
+    const html = buildInformeTecnicoHtml(datos);
+
+    const win = new BrowserWindow({
+        show: false,
+        width: 800,
+        height: 600,
+        webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true
+        }
+    });
+
+    try {
+        await win.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+        const pdf = await win.webContents.printToPDF({
+            printBackground: true,
+            preferCSSPageSize: true,
+            margins: { top: 0, bottom: 0, left: 0, right: 0 }
+        });
+        return Buffer.from(pdf);
+    } finally {
+        if (!win.isDestroyed()) win.close();
+    }
+}

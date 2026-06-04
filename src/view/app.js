@@ -720,57 +720,264 @@ async function loadAnalytics(periodo = 'trimestral') {
     }
 }
 
-async function loadInforme(filtroDireccionId) {
-    const table = document.getElementById('informe-table');
-    if (!table) return;
+// ─── Informe Técnico: Lista paginada + Editor ───────────────────────────
 
-    try {
-        const actividades = await safeInvoke('get-actividades-por-direccion', filtroDireccionId || '');
+const INFORME_PAGE_SIZE = 10;
+let _informeActividades = [];
+let _informePage = 1;
+let _informeExportFormat = 'word';
 
-        if (!actividades || actividades.length === 0) {
-            table.innerHTML = '<div class="empty-state"><p>No hay actividades para mostrar</p></div>';
-            return;
-        }
+const _estadoLabel = { pendiente: 'Pendiente', en_proceso: 'En proceso', completado: 'Completado', cancelado: 'Cancelado' };
+const _estadoCls = { pendiente: 'tag-pendiente', en_proceso: 'tag-en_proceso', completado: 'tag-completado', cancelado: 'tag-cancelado' };
 
-        table.innerHTML = `
-            <table class="informe-table">
-                <thead>
-                    <tr>
-                        <th>Dirección</th>
-                        <th>Incidencia</th>
-                        <th>Descripción</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${actividades.map(a => {
-                        const fecha = window.DateUtils?.parse(a.created_at);
-                        return `<tr>
-                            <td>${escapeHtml(a.direccion)}</td>
-                            <td>${escapeHtml(a.incidencia)}</td>
-                            <td>${escapeHtml(a.descripcion || '—')}</td>
-                            <td>${fecha ? fecha.short : a.created_at}</td>
-                        </tr>`;
-                    }).join('')}
-                </tbody>
-            </table>`;
-    } catch (err) {
-        console.error('Error cargando informe:', err);
-        table.innerHTML = '<div class="empty-state"><p>Error al cargar informe</p></div>';
+function _mapActividadToTemplate(act) {
+    const fecha = window.DateUtils?.parse(act.created_at);
+    const fechaStr = fecha ? `Valle de la Pascua: ${fecha.short || act.created_at}` : act.created_at;
+    return [
+        ['fecha', fechaStr],
+        ['numeroInforme', act.id.substring(0, 8)],
+        ['destinatarioNombre', act.direccion || ''],
+        ['destinatarioCargo', ''],
+        ['destinatarioDpto', 'ALCALDIA DE INFANTE'],
+        ['codigoBien', ''],
+        ['descripcion', act.descripcion || ''],
+        ['requerimiento', act.incidencia || ''],
+        ['diagnostico', act.descripcion || '']
+    ];
+}
+
+function _renderInformeLista() {
+    const listEl = document.getElementById('informe-actividades-list');
+    const pagEl = document.getElementById('informe-pagination');
+    if (!listEl) return;
+
+    const total = _informeActividades.length;
+    const totalPages = Math.ceil(total / INFORME_PAGE_SIZE);
+    if (_informePage > totalPages) _informePage = Math.max(1, totalPages);
+    const start = (_informePage - 1) * INFORME_PAGE_SIZE;
+    const pageItems = _informeActividades.slice(start, start + INFORME_PAGE_SIZE);
+
+    if (total === 0) {
+        listEl.innerHTML = '<div class="empty-state" style="padding:24px;"><p>No hay actividades registradas</p></div>';
+        if (pagEl) pagEl.classList.remove('visible');
+        return;
+    }
+
+    listEl.innerHTML = pageItems.map(a => {
+        const fecha = window.DateUtils?.parse(a.created_at);
+        return `<div class="informe-act-item" data-id="${a.id}" data-direccion="${encodeURIComponent(a.direccion)}" data-incidencia="${encodeURIComponent(a.incidencia)}" data-descripcion="${encodeURIComponent(a.descripcion || '')}" data-creado="${a.created_at}">
+            <div class="informe-act-main">
+                <div class="informe-act-info">
+                    <span class="informe-act-dir">${escapeHtml(a.direccion)}</span>
+                    <span class="informe-act-inc">${escapeHtml(a.incidencia)}</span>
+                </div>
+                <span class="informe-act-desc">${escapeHtml(a.descripcion || 'Sin descripción')}</span>
+            </div>
+            <span class="tag ${_estadoCls[a.estado] || 'tag-estado'}">${_estadoLabel[a.estado] || a.estado}</span>
+            <span class="informe-act-fecha">${fecha ? fecha.short : ''}</span>
+            <div class="export-dropdown">
+                <button class="export-dropdown-toggle">Exportar ▾</button>
+                <div class="export-dropdown-menu">
+                    <button data-format="pdf" data-id="${a.id}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="12" x2="12" y2="18"/><polyline points="9 15 12 18 15 15"/></svg>
+                        PDF
+                    </button>
+                    <button data-format="word" data-id="${a.id}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        Word
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    }).join('');
+
+    if (pagEl) {
+        pagEl.innerHTML = `
+            <button ${_informePage <= 1 ? 'disabled' : ''} data-action="prev">Anterior</button>
+            <span class="page-indicator">Pág ${_informePage} de ${totalPages}</span>
+            <button ${_informePage >= totalPages ? 'disabled' : ''} data-action="next">Siguiente</button>
+        `;
+        pagEl.classList.toggle('visible', totalPages > 1);
     }
 }
 
-async function initInformeFilters() {
-    const filterSelect = document.querySelector('#view-informe select-dropdown[id="filter-direccion"]');
-    if (!filterSelect) return;
+function _abrirEditorConActividad(act) {
+    const layout = document.querySelector('.informe-editor-layout');
+    const editor = document.getElementById('kv-editor');
+    const label = document.getElementById('informe-editor-label');
+
+    if (layout) layout.classList.add('has-editor');
+    if (label) label.textContent = `Editando: ${act.direccion} — ${act.incidencia}`;
+
+    const mapped = _mapActividadToTemplate(act);
+    if (editor) {
+        editor.setAttribute('defaults', JSON.stringify(mapped));
+    }
+    requestAnimationFrame(() => _actualizarPreview());
+}
+
+function _actualizarPreview() {
+    const editor = document.getElementById('kv-editor');
+    const preview = document.getElementById('informe-preview');
+    if (!editor || !preview) return;
+    const data = editor.getData?.() || {};
+    preview.innerHTML = _renderInformePreview(data);
+}
+
+function _renderInformePreview(datos) {
+    const g = (key, fb) => (datos[key] || fb || '');
+    return `
+        <div class="preview-page">
+            <div class="preview-fecha">${escapeHtml(g('fecha'))}</div>
+            <div class="preview-spacer"></div>
+            <div class="preview-title">INFORME TÉCNICO</div>
+            <div class="preview-number">N° ${escapeHtml(g('numeroInforme'))}</div>
+            <div class="preview-section">
+                <div class="preview-label">CIUDADANO:</div>
+                <div class="preview-value">${escapeHtml(g('destinatarioNombre'))}</div>
+                <div class="preview-value">${escapeHtml(g('destinatarioCargo'))}</div>
+                <div class="preview-value">${escapeHtml(g('destinatarioDpto'))}</div>
+            </div>
+            <div class="preview-paragraph">
+                Luego de extenderle un cordial saludo me dirijo a usted con la finalidad de dar a conocer el diagnostico obtenido de la revisión de los siguientes equipos:
+            </div>
+            <table class="preview-table">
+                <thead>
+                    <tr>
+                        <th>Código del Bien</th>
+                        <th>Descripción</th>
+                        <th>Requerimiento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>${escapeHtml(g('codigoBien'))}</td>
+                        <td>${escapeHtml(g('descripcion'))}</td>
+                        <td>${escapeHtml(g('requerimiento'))}</td>
+                    </tr>
+                    <tr>
+                        <td class="preview-bold">Diagnostico:</td>
+                        <td colspan="2">${escapeHtml(g('diagnostico'))}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="preview-spacer"></div>
+            <div class="preview-paragraph">Sin más a que hacer referencia.</div>
+            <div class="preview-spacer"></div>
+            <div class="preview-spacer"></div>
+            <table class="preview-firmas">
+                <tr>
+                    <td>INFORMATICA Y SISTEMA</td>
+                    <td>DIVISION DE REGISTRO...</td>
+                    <td>RECIBIDO POR:</td>
+                </tr>
+                <tr>
+                    <td>FIRMA: _______________</td>
+                    <td>FIRMA: _______________</td>
+                    <td>FIRMA: _______________</td>
+                </tr>
+            </table>
+        </div>`;
+}
+
+async function _cargarActividadesInforme() {
     try {
-        const dirs = await safeInvoke('get-direcciones');
-        filterSelect.loadOptions([{ id: '', nombre: 'Todas las direcciones' }, ...dirs], 'Seleccione dirección');
-        filterSelect.addEventListener('change', (e) => {
-            loadInforme(e.detail.value || undefined);
-        });
+        _informeActividades = await safeInvoke('get-actividades');
+        _informePage = 1;
+        _renderInformeLista();
     } catch (err) {
-        console.error('Error cargando filtros de informe:', err);
+        console.error('Error cargando actividades para informe:', err);
+        const listEl = document.getElementById('informe-actividades-list');
+        if (listEl) listEl.innerHTML = '<div class="empty-state"><p>Error al cargar actividades</p></div>';
+    }
+}
+
+function initInformeEditor() {
+    const listEl = document.getElementById('informe-actividades-list');
+    const pagEl = document.getElementById('informe-pagination');
+    const btnGenerar = document.getElementById('btn-generar-informe');
+    const btnVolver = document.getElementById('btn-volver-informe');
+
+    _cargarActividadesInforme();
+
+    if (btnVolver) {
+        btnVolver.addEventListener('click', () => {
+            const layout = document.querySelector('.informe-editor-layout');
+            if (layout) layout.classList.remove('has-editor');
+        });
+    }
+
+    if (listEl) {
+        listEl.addEventListener('click', (e) => {
+            const dropdownToggle = e.target.closest('.export-dropdown-toggle');
+            if (dropdownToggle) {
+                e.stopPropagation();
+                const menu = dropdownToggle.parentElement.querySelector('.export-dropdown-menu');
+                const wasOpen = menu.classList.contains('open');
+                document.querySelectorAll('.export-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+                if (!wasOpen) menu.classList.add('open');
+                return;
+            }
+
+            const menuBtn = e.target.closest('.export-dropdown-menu button');
+            if (menuBtn) {
+                e.stopPropagation();
+                const id = menuBtn.dataset.id;
+                const format = menuBtn.dataset.format;
+                _informeExportFormat = format;
+                const act = _informeActividades.find(a => a.id === id);
+                if (act) {
+                    document.querySelectorAll('.informe-act-item.active').forEach(el => el.classList.remove('active'));
+                    const item = menuBtn.closest('.informe-act-item');
+                    if (item) item.classList.add('active');
+                    menuBtn.closest('.export-dropdown-menu').classList.remove('open');
+                    _abrirEditorConActividad(act);
+                }
+            }
+        });
+    }
+
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.export-dropdown-menu.open').forEach(m => m.classList.remove('open'));
+    });
+
+    if (pagEl) {
+        pagEl.addEventListener('click', (e) => {
+            const action = e.target.dataset.action;
+            if (action === 'prev' && _informePage > 1) {
+                _informePage--;
+                _renderInformeLista();
+            }
+            if (action === 'next' && _informePage < Math.ceil(_informeActividades.length / INFORME_PAGE_SIZE)) {
+                _informePage++;
+                _renderInformeLista();
+            }
+        });
+    }
+
+    const editor = document.getElementById('kv-editor');
+    if (editor) {
+        editor.addEventListener('kv-change', () => _actualizarPreview());
+    }
+
+    if (btnGenerar) {
+        btnGenerar.addEventListener('action', async () => {
+            const ed = document.getElementById('kv-editor');
+            const datos = ed?.getData?.() || {};
+            Toast.info?.('Generando documento...');
+            try {
+                const fn = _informeExportFormat === 'pdf'
+                    ? window.electronAPI?.export?.informeTecnicoPdf
+                    : window.electronAPI?.export?.informeTecnico;
+                const result = await fn(datos);
+                if (result?.filePath) {
+                    Toast.success('Informe guardado correctamente');
+                }
+            } catch (err) {
+                console.error('Error generando informe:', err);
+                Toast.error?.('Error al generar el informe');
+            }
+        });
     }
 }
 
@@ -867,7 +1074,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadIncidencias();
     loadActividades();
     loadSelects();
-    initInformeFilters();
+    initInformeEditor();
     initDashboardFilters();
     initAnalyticsButtons();
     } catch (err) {
@@ -1039,7 +1246,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await loadSelects();
             }
             if (e.detail.view === 'informe') {
-                await loadInforme();
+                initInformeEditor();
             }
             if (e.detail.view === 'configuracion') {
                 await loadSelects();

@@ -147,12 +147,30 @@
                 <header class="content-header">
                     <h2 class="page-title">Informe Técnico</h2>
                 </header>
-                <div class="content-body">
-                    <div style="display:flex;gap:12px;margin-bottom:20px;align-items:flex-end;">
-                        <select-dropdown id="filter-direccion" label="Filtrar por Dirección" style="flex:1;"></select-dropdown>
-                        <button-action id="btn-imprimir" text="Imprimir" variant="secondary"></button-action>
+                <div class="content-body" style="padding:0;">
+                    <div class="informe-editor-layout">
+                        <div class="informe-list-panel">
+                            <div class="informe-panel-title">Actividades</div>
+                            <div id="informe-actividades-list" class="informe-actividades-list"></div>
+                            <div id="informe-pagination" class="informe-pagination"></div>
+                        </div>
+                        <div class="informe-editor-panel" id="informe-editor-panel">
+                            <div class="informe-editor-left">
+                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                                    <button id="btn-volver-informe" class="icon-btn" type="button" title="Volver a actividades">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                                    </button>
+                                    <div class="informe-panel-title" id="informe-editor-label"></div>
+                                </div>
+                                <key-value-editor id="kv-editor"></key-value-editor>
+                                <button-action id="btn-generar-informe" text="Generar" variant="primary" style="margin-top:12px;"></button-action>
+                            </div>
+                            <div class="informe-editor-right">
+                                <div class="informe-panel-title" style="margin-bottom:8px;">Vista previa</div>
+                                <div id="informe-preview" class="informe-preview-doc"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="crud-list" id="informe-table"></div>
                 </div>
             </div>
 

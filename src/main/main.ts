@@ -6,7 +6,7 @@ import { DireccionesAdapter } from '../database/direcciones-adapter';
 import { IncidenciasAdapter } from '../database/incidencias-adapter';
 import { ActividadesAdapter } from '../database/actividades-adapter';
 import { MetricsAdapter } from '../database/metrics-adapter';
-import { generatePdf, generateWord } from './report-export';
+import { generatePdf, generateWord, generateInformeTecnico, generateInformeTecnicoPdf } from './report-export';
 
 class Main {
     private window: BrowserWindow | null = null;
@@ -229,6 +229,32 @@ class Main {
             });
             if (canceled || !filePath) return { canceled: true };
             const buffer = await generateWord(args.actividades, args.filterLabel);
+            const fs = require('fs');
+            fs.writeFileSync(filePath, buffer);
+            return { filePath };
+        }));
+
+        ipcMain.handle('generate-informe-tecnico', logHandler('generate-informe-tecnico', async (datos: Record<string, string>) => {
+            const { filePath, canceled } = await dialog.showSaveDialog(this.window!, {
+                title: 'Generar Informe Técnico',
+                defaultPath: `IT-${datos.numeroInforme || Date.now()}_ADMINISTRACION.docx`,
+                filters: [{ name: 'Word', extensions: ['docx'] }]
+            });
+            if (canceled || !filePath) return { canceled: true };
+            const buffer = await generateInformeTecnico(datos);
+            const fs = require('fs');
+            fs.writeFileSync(filePath, buffer);
+            return { filePath };
+        }));
+
+        ipcMain.handle('generate-informe-tecnico-pdf', logHandler('generate-informe-tecnico-pdf', async (datos: Record<string, string>) => {
+            const { filePath, canceled } = await dialog.showSaveDialog(this.window!, {
+                title: 'Generar Informe Técnico PDF',
+                defaultPath: `IT-${datos.numeroInforme || Date.now()}_ADMINISTRACION.pdf`,
+                filters: [{ name: 'PDF', extensions: ['pdf'] }]
+            });
+            if (canceled || !filePath) return { canceled: true };
+            const buffer = await generateInformeTecnicoPdf(datos);
             const fs = require('fs');
             fs.writeFileSync(filePath, buffer);
             return { filePath };
