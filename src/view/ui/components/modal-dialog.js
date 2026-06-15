@@ -11,7 +11,7 @@ export class ModalDialog extends BaseComponent {
     }
 
     render() {
-        this.shadowRoot.innerHTML = `<style>
+        this.shadowRoot.innerHTML = `<style>@import url("styles.css");</style><style>
                 :host {
                     display: none;
                     position: fixed;
@@ -90,7 +90,7 @@ export class ModalDialog extends BaseComponent {
                     <h2 class="modal-title"></h2>
                     <button class="modal-close" data-action="close" aria-label="Cerrar">&times;</button>
                 </div>
-                <div class="modal-body"></div>
+                <div class="modal-body"><slot name="body-content"></slot></div>
             </div>`;
 
         this.shadowRoot.querySelectorAll('[data-action="close"]').forEach(el => {
@@ -102,7 +102,7 @@ export class ModalDialog extends BaseComponent {
         if (this.hasAttribute('open')) {
             const current = {
                 title: this.shadowRoot.querySelector('.modal-title').textContent,
-                body: this.shadowRoot.querySelector('.modal-body').innerHTML,
+                body: this.innerHTML,
                 onRestore: this._onRestore,
             };
             if (!this._stack) this._stack = [];
@@ -110,7 +110,7 @@ export class ModalDialog extends BaseComponent {
         }
         this._onRestore = onRestore || null;
         this.shadowRoot.querySelector('.modal-title').textContent = title;
-        this.shadowRoot.querySelector('.modal-body').innerHTML = bodyHTML;
+        this.innerHTML = `<div slot="body-content">${bodyHTML}</div>`;
         this.setAttribute('open', '');
         if (!this._keyHandler) {
             this._keyHandler = (e) => { if (e.key === 'Escape') this.close(); };
@@ -133,6 +133,7 @@ export class ModalDialog extends BaseComponent {
             document.removeEventListener('keydown', this._keyHandler);
             this._keyHandler = null;
         }
+        this.dispatchEvent(new CustomEvent('modal-close', { bubbles: true, composed: true }));
     }
 
     closeAll() {

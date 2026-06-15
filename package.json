@@ -4,13 +4,16 @@
   "description": "Proyecto con arquitectura MVC usando Electron",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc && npm run copy-views && npm run bundle-ui",
+    "build": "tsc && npm run copy-views && npm run bundle-ui && npm run bundle-app",
     "copy-views": "node -e \"require('fs').cpSync('src/view','dist/view',{recursive:true})\"",
     "bundle-ui": "esbuild src/view/ui/index.js --bundle --outfile=dist/view/ui.bundle.js --format=iife",
+    "bundle-app": "esbuild src/view/app.js --bundle --outfile=dist/view/app.bundle.js --format=iife",
     "start": "npm run build && electron .",
     "dev": "npm run build && electron .",
     "seed": "npm run build && electron dist/database/seed.js",
     "test": "npm run build && electron dist/test/test-create.js"
+    ,
+    "test:generator": "npm run build && electron dist/test/test-generator.js"
   },
   "author": "",
   "license": "MIT",

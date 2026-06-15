@@ -15,12 +15,15 @@
     <div class="app-container">
         <aside class="sidebar">
             <div class="sidebar-header">
+                <button id="sidebar-toggle" class="sidebar-toggle" type="button" title="Colapsar sidebar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
                 <h1 class="app-title">Alcaldía</h1>
             </div>
             <nav class="sidebar-nav">
                 <nav-menu-item icon="home" text="Inicio" view="inicio" active></nav-menu-item>
                 <nav-menu-item icon="briefcase" text="Actividades" view="actividades"></nav-menu-item>
-                <nav-menu-item icon="fileText" text="Informe técnico" view="informe"></nav-menu-item>
+                <nav-menu-item icon="fileText" text="Informes" view="informe"></nav-menu-item>
                 <nav-menu-item icon="settings" text="Configuración" view="configuracion"></nav-menu-item>
             </nav>
         </aside>
@@ -74,9 +77,7 @@
             </div>
 
             <div id="view-direcciones" class="page-view">
-                <header class="content-header">
-                    <h2 class="page-title">Direcciones</h2>
-                </header>
+                <header class="content-header"><h2 class="page-title">Direcciones</h2></header>
                 <div class="content-body">
                     <form class="activity-form" id="form-direccion" style="margin-bottom: 24px;">
                         <div style="display: flex; gap: 12px; align-items: flex-end;">
@@ -89,9 +90,7 @@
             </div>
 
             <div id="view-incidencias" class="page-view">
-                <header class="content-header">
-                    <h2 class="page-title">Incidencias</h2>
-                </header>
+                <header class="content-header"><h2 class="page-title">Incidencias</h2></header>
                 <div class="content-body">
                     <form class="activity-form" id="form-incidencia" style="margin-bottom: 24px;">
                         <div style="display: flex; gap: 12px; align-items: flex-end;">
@@ -108,15 +107,9 @@
                     <div style="display:flex; align-items:center; gap:16px;">
                         <h2 class="page-title" style="margin:0;">Actividades</h2>
                         <div class="layout-toggle">
-                            <button class="layout-btn active" data-layout="cards" title="Vista Cards">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                            </button>
-                            <button class="layout-btn" data-layout="list" title="Vista Lista">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                            </button>
-                            <button class="layout-btn" data-layout="calendar" title="Vista Calendario">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                            </button>
+                            <button class="layout-btn active" data-layout="cards" title="Vista Cards"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+                            <button class="layout-btn" data-layout="list" title="Vista Lista"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
+                            <button class="layout-btn" data-layout="calendar" title="Vista Calendario"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
                         </div>
                     </div>
                     <button-action id="btn-crear-actividad" text="Crear Actividad" variant="primary"></button-action>
@@ -130,10 +123,7 @@
                     <table class="lista-actividades" id="actividades-list-table" style="display:none;">
                         <thead>
                             <tr>
-                                <th>Dirección</th>
-                                <th>Incidencia</th>
-                                <th>Descripción</th>
-                                <th>Fecha</th>
+                                <th>Dirección</th><th>Incidencia</th><th>Descripción</th><th>Fecha</th>
                                 <th style="width:1%;white-space:nowrap;"></th>
                             </tr>
                         </thead>
@@ -145,52 +135,65 @@
 
             <div id="view-informe" class="page-view">
                 <header class="content-header">
-                    <h2 class="page-title">Informe Técnico</h2>
+                    <h2 class="page-title">Informes</h2>
                 </header>
-                <div class="content-body" style="padding:0;">
-                    <div class="informe-editor-layout">
-                        <div class="informe-list-panel">
-                            <div class="informe-panel-title">Actividades</div>
-                            <div id="informe-actividades-list" class="informe-actividades-list"></div>
-                            <div id="informe-pagination" class="informe-pagination"></div>
-                        </div>
-                        <div class="informe-editor-panel" id="informe-editor-panel">
-                            <div class="informe-editor-left">
-                                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                                    <button id="btn-volver-informe" class="icon-btn" type="button" title="Volver a actividades">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-                                    </button>
-                                    <div class="informe-panel-title" id="informe-editor-label"></div>
+                <div class="content-body rb-content-body">
+                    <div class="rb-shell" id="rb-shell">
+                        <section class="rb-builder-panel">
+                            <div class="rb-topbar">
+                                <div class="rb-topbar-section rb-topbar-activity">
+                                    <span class="rb-section-label">Actividad</span>
+                                    <activity-selector id="rb-activity-selector"></activity-selector>
                                 </div>
-                                <key-value-editor id="kv-editor"></key-value-editor>
-                                <button-action id="btn-generar-informe" text="Generar" variant="primary" style="margin-top:12px;"></button-action>
+                                <div class="rb-topbar-section rb-topbar-templates">
+                                    <span class="rb-section-label">Plantilla</span>
+                                    <div id="rb-template-picker" class="rb-template-picker"></div>
+                                </div>
+                                <div class="rb-topbar-section rb-topbar-actions">
+                                    <button id="btn-toggle-preview" class="icon-btn" type="button" title="Mostrar / ocultar vista previa">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+                                    </button>
+                                    <button-action id="btn-generar-word" text="Word" variant="secondary"></button-action>
+                                    <button-action id="btn-generar-pdf" text="PDF" variant="primary"></button-action>
+                                </div>
                             </div>
-                            <div class="informe-editor-right">
-                                <div class="informe-panel-title" style="margin-bottom:8px;">Vista previa</div>
-                                <div id="informe-preview" class="informe-preview-doc"></div>
+                            <div class="rb-form-area">
+                                <div id="rb-form" class="rb-form-host"></div>
                             </div>
-                        </div>
+                        </section>
+
+                        <aside id="rb-preview-panel" class="rb-preview-panel">
+                            <div class="rb-preview-header">
+                                <span class="rb-section-label">Vista previa</span>
+                                <div style="flex:1;"></div>
+                                <button id="rb-preview-fullscreen" class="icon-btn" type="button" title="Expandir">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+                                </button>
+                                <button id="rb-preview-close" class="icon-btn" type="button" title="Cerrar">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                </button>
+                            </div>
+                            <div id="informe-preview" class="rb-preview-doc"></div>
+                        </aside>
                     </div>
                 </div>
             </div>
 
             <div id="view-configuracion" class="page-view">
-                <header class="content-header">
-                    <h2 class="page-title">Configuración</h2>
-                </header>
+                <header class="content-header"><h2 class="page-title">Configuración</h2></header>
                 <div class="content-body">
                     <div style="display:flex;flex-direction:column;gap:16px;max-width:480px;">
-                        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:var(--bg-white);border:1px solid var(--border-color);border-radius:12px;">
+                        <div class="cfg-card">
                             <div>
-                                <div style="font-weight:600;font-size:14px;color:var(--text-primary);margin-bottom:4px;">Direcciones</div>
-                                <div style="font-size:13px;color:var(--text-tertiary);">Gestionar direcciones municipales</div>
+                                <div class="cfg-card-title">Direcciones</div>
+                                <div class="cfg-card-meta">Gestionar direcciones municipales</div>
                             </div>
                             <button-action text="Editar" variant="secondary" id="cfg-direcciones"></button-action>
                         </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;padding:20px 24px;background:var(--bg-white);border:1px solid var(--border-color);border-radius:12px;">
+                        <div class="cfg-card">
                             <div>
-                                <div style="font-weight:600;font-size:14px;color:var(--text-primary);margin-bottom:4px;">Incidencias</div>
-                                <div style="font-size:13px;color:var(--text-tertiary);">Gestionar tipos de incidencias</div>
+                                <div class="cfg-card-title">Incidencias</div>
+                                <div class="cfg-card-meta">Gestionar tipos de incidencias</div>
                             </div>
                             <button-action text="Editar" variant="secondary" id="cfg-incidencias"></button-action>
                         </div>
@@ -201,6 +204,6 @@
     </div>
 
     <script src="ui.bundle.js"></script>
-    <script src="app.js"></script>
+    <script src="app.bundle.js"></script>
 </body>
 </html>

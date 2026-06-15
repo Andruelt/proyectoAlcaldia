@@ -1,14 +1,10 @@
 import { contextBridge, ipcRenderer } from 'electron';
 
 const electronAPI = {
-    sendToMain: (channel: string, data: unknown) => ipcRenderer.send(channel, data),
-    onRenderView: (callback: (html: string) => void) => {
-        ipcRenderer.on('render-view', (event, html) => callback(html));
-    },
-    onMessage: (channel: string, callback: (data: unknown) => void) => {
+    invoke: (channel: string, data?: unknown) => ipcRenderer.invoke(channel, data),
+    on: (channel: string, callback: (data: unknown) => void) => {
         ipcRenderer.on(channel, (event, data) => callback(data));
     },
-    invoke: (channel: string, data?: unknown) => ipcRenderer.invoke(channel, data),
     windowControls: {
         minimize: () => ipcRenderer.invoke('window-minimize'),
         maximize: () => ipcRenderer.invoke('window-maximize'),
@@ -18,9 +14,13 @@ const electronAPI = {
     export: {
         pdf: (data: { actividades: any[]; filterLabel: string }) => ipcRenderer.invoke('export-pdf', data),
         word: (data: { actividades: any[]; filterLabel: string }) => ipcRenderer.invoke('export-word', data),
-        informeTecnico: (datos: Record<string, string>) => ipcRenderer.invoke('generate-informe-tecnico', datos),
-        informeTecnicoPdf: (datos: Record<string, string>) => ipcRenderer.invoke('generate-informe-tecnico-pdf', datos),
+    },
+    reports: {
+        templates: () => ipcRenderer.invoke('get-report-templates'),
+        generate: (data: unknown) => ipcRenderer.invoke('generate-report', data),
+        schema: () => ipcRenderer.invoke('get-equipos-schema'),
     },
 };
 
 contextBridge.exposeInMainWorld('electronAPI', electronAPI);
+// reports.schema is exposed on electronAPI at creation time

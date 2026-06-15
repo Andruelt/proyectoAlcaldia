@@ -175,6 +175,9 @@ export class DatabaseAdapter {
             if (!cols.includes('estado')) this.db!.run("ALTER TABLE actividades ADD COLUMN estado TEXT DEFAULT 'pendiente'");
             if (!cols.includes('prioridad')) this.db!.run("ALTER TABLE actividades ADD COLUMN prioridad TEXT DEFAULT 'media'");
             if (!cols.includes('resolved_at')) this.db!.run("ALTER TABLE actividades ADD COLUMN resolved_at TEXT");
+            
+            if (!cols.includes('tipo_equipo')) this.db!.run("ALTER TABLE actividades ADD COLUMN tipo_equipo TEXT DEFAULT 'general'");
+            if (!cols.includes('datos_tecnicos')) this.db!.run("ALTER TABLE actividades ADD COLUMN datos_tecnicos TEXT");            
         } catch (e) {
             console.warn('[DB] Migration warning:', e);
         }
@@ -188,28 +191,28 @@ export class DatabaseAdapter {
 
         if (countDir === 0) {
             const direcciones = [
-                'Despacho del alcade',
-                'Direccion general',
-                'Castastro',
-                'Hacienda municipal',
+                'Despacho del Alcalde',
+                'Direccion General',
+                'Catastro',
+                'Hacienda Municipal',
                 'Administracion',
                 'Compras',
-                'Tesoreia',
+                'Tesoreria',
                 'Contabilidad',
-                'Bienes municipales',
+                'Bienes Municipales',
                 'Presupuesto',
                 'Contrataciones',
                 'Prensa',
-                'Desarrrolo urbano',
-                'Ingenieria municipal',
+                'Desarrollo Urbano',
+                'Ingenieria Municipal',
                 'Planificacion',
-                'Recursos humanos',
+                'Recursos Humanos',
                 'Informatica',
-                'Servicios publicos',
-                'Desarrollo social',
-                'Consejo municipal',
+                'Servicios Publicos',
+                'Desarrollo Social',
+                'Consejo Municipal',
                 'Sindicatura',
-                'Seguridad ciudadana',
+                'Seguridad Ciudadana',
                 'OAC',
                 'Inmuvin',
                 'Fondemin',
@@ -217,8 +220,8 @@ export class DatabaseAdapter {
                 'Cejarca',
                 'Iapatmi',
                 'Cllp',
-                'Registro civil',
-                'Registro civil del hospital',
+                'Registro Civil',
+                'Registro Civil del Hospital',
                 'Otros'
             ];
             const now = new Date().toISOString();
@@ -237,7 +240,7 @@ export class DatabaseAdapter {
                 'Mantenimiento de equipo',
                 'Soporte tecnico o asesorias',
                 'Instalacion de software/Configuracion de equipo',
-                'Sistema sisap',
+                'Sistema Sisap',
                 'Sistema Siap',
                 'Red e internet',
                 'Telefonia y comunicaciones',

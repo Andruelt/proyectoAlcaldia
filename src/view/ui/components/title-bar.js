@@ -31,44 +31,42 @@ export class TitleBar extends HTMLElement {
                 border-bottom: 1px solid #e2e8f0;
                 user-select: none;
             }
-            .traffic-lights {
+            .win-controls {
                 display: flex;
-                gap: 8px;
                 -webkit-app-region: no-drag;
-                padding-right: 12px;
+                height: 100%;
+                margin-left: auto;
             }
-            .dot {
-                width: 12px;
-                height: 12px;
-                border-radius: 50%;
-                border: none;
-                cursor: pointer;
-                position: relative;
+            .win-btn {
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                width: 46px;
+                height: 100%;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                color: #475569;
+                transition: background 0.12s ease, color 0.12s ease;
                 padding: 0;
-                transition: filter 0.15s ease;
+                outline: none;
             }
-            .dot:hover {
-                filter: brightness(0.85);
+            .win-btn svg {
+                display: block;
             }
-            .dot svg {
-                opacity: 0;
-                transition: opacity 0.12s ease;
-                pointer-events: none;
+            .win-btn:hover {
+                background: #e2e8f0;
             }
-            .dot:hover svg {
-                opacity: 1;
+            .win-btn:active {
+                background: #cbd5e1;
             }
-            .dot-close {
-                background: #ff5f57;
+            .win-btn.btn-close:hover {
+                background: #e81123;
+                color: #ffffff;
             }
-            .dot-minimize {
-                background: #febc2e;
-            }
-            .dot-maximize {
-                background: #28c840;
+            .win-btn.btn-close:active {
+                background: #bf0f1d;
+                color: #ffffff;
             }
             .title {
                 flex: 1;
@@ -78,28 +76,27 @@ export class TitleBar extends HTMLElement {
                 font-weight: 600;
                 color: #475569;
                 letter-spacing: 0.02em;
-                padding-right: 76px;
             }
         </style>
         <div class="titlebar">
-            <div class="traffic-lights">
-                <button class="dot dot-close" id="btn-close" title="Cerrar">
-                    <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="#4a1a1a" stroke-width="1.5" stroke-linecap="round">
-                        <line x1="3" y1="3" x2="9" y2="9"/><line x1="9" y1="3" x2="3" y2="9"/>
+            <div class="title">Alcaldía</div>
+            <div class="win-controls">
+                <button class="win-btn btn-minimize" id="btn-minimize" title="Minimizar">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <line x1="2" y1="6" x2="10" y2="6"/>
                     </svg>
                 </button>
-                <button class="dot dot-minimize" id="btn-minimize" title="Minimizar">
-                    <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="#8a6d00" stroke-width="1.5" stroke-linecap="round">
-                        <line x1="3" y1="6" x2="9" y2="6"/>
+                <button class="win-btn btn-maximize" id="btn-maximize" title="Maximizar">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="1.5" y="1.5" width="9" height="9" rx="1"/>
                     </svg>
                 </button>
-                <button class="dot dot-maximize" id="btn-maximize" title="Maximizar">
-                    <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke="#1a5c1a" stroke-width="1.5">
-                        <rect x="2.5" y="2.5" width="7" height="7" rx="1"/>
+                <button class="win-btn btn-close" id="btn-close" title="Cerrar">
+                    <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <line x1="2" y1="2" x2="10" y2="10"/><line x1="10" y1="2" x2="2" y2="10"/>
                     </svg>
                 </button>
             </div>
-            <div class="title">Alcaldía</div>
         </div>`;
 
         this.shadowRoot.getElementById('btn-close').addEventListener('click', (e) => {

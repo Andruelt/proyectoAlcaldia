@@ -1,4 +1,5 @@
 node_modules/
 dist/
 *.db
+tmp-test/
 repomix-output.xml

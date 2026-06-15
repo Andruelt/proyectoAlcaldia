@@ -14,6 +14,8 @@ export interface ActividadCompleta extends Actividad {
     estado: string;
     prioridad: string;
     resolved_at: string | null;
+    tipo_equipo: string;
+    datos_tecnicos: Record<string, unknown> | null;
 }
 
 export interface AnalyticsRow {
@@ -45,37 +47,72 @@ interface TendenciaRow {
 export class ActividadesAdapter {
     constructor(private db: DatabaseAdapter) {}
 
+    private _parseDatosTecnicos(raw: any): Record<string, unknown> | null {
+        if (raw === null || typeof raw === 'undefined') return null;
+        if (typeof raw === 'string') {
+            try { return JSON.parse(raw); } catch { return null; }
+        }
+        if (typeof raw === 'object') return raw as Record<string, unknown>;
+        return null;
+    }
+
     public getAll(): ActividadCompleta[] {
-        return this.db.all<ActividadCompleta>(`
+        const rows = this.db.all<any>(`
             SELECT a.id, d.nombre as direccion, i.nombre as incidencia, a.descripcion,
-                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at
+                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at,
+                   a.tipo_equipo, a.datos_tecnicos
             FROM actividades a
             JOIN direcciones d ON a.direccion_id = d.id AND d.deleted_at IS NULL
             JOIN incidencias i ON a.incidencia_id = i.id AND i.deleted_at IS NULL
             WHERE a.deleted_at IS NULL
             ORDER BY a.created_at DESC
         `);
+        return rows.map((r: any) => ({ ...r, datos_tecnicos: this._parseDatosTecnicos(r.datos_tecnicos) }));
     }
 
     public add(direccionId: string, incidenciaId: string, descripcion: string,
-               estado = 'pendiente', prioridad = 'media'): string {
+               estado = 'pendiente', prioridad = 'media',
+               tipoEquipo = 'general', datosTecnicos: any = null): string {
         const id = crypto.randomUUID();
         const now = new Date().toISOString();
+        const jsonDatos = datosTecnicos ? JSON.stringify(datosTecnicos) : null;
         this.db.run(
-            'INSERT INTO actividades (id, direccion_id, incidencia_id, descripcion, created_at, updated_at, estado, prioridad) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-            [id, direccionId, incidenciaId, descripcion, now, now, estado, prioridad]
+            'INSERT INTO actividades (id, direccion_id, incidencia_id, descripcion, created_at, updated_at, estado, prioridad, tipo_equipo, datos_tecnicos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [id, direccionId, incidenciaId, descripcion, now, now, estado, prioridad, tipoEquipo, jsonDatos]
         );
         this.db.save();
         return id;
     }
 
-    public update(id: string, direccionId: string, incidenciaId: string, descripcion: string): void {
+    public update(id: string, direccionId: string, incidenciaId: string, descripcion: string, tipoEquipo?: string, datosTecnicos?: any): void {
         const now = new Date().toISOString();
         const old = this.db.get<{ estado: string; prioridad: string }>('SELECT estado, prioridad FROM actividades WHERE id = ?', [id]);
-        this.db.run(
-            'UPDATE actividades SET direccion_id = ?, incidencia_id = ?, descripcion = ?, updated_at = ? WHERE id = ?',
-            [direccionId, incidenciaId, descripcion, now, id]
-        );
+
+        if (typeof tipoEquipo === 'undefined' && typeof datosTecnicos === 'undefined') {
+            this.db.run(
+                'UPDATE actividades SET direccion_id = ?, incidencia_id = ?, descripcion = ?, updated_at = ? WHERE id = ?',
+                [direccionId, incidenciaId, descripcion, now, id]
+            );
+        } else {
+            const current = this.db.get<any>(
+                'SELECT tipo_equipo, datos_tecnicos FROM actividades WHERE id = ?',
+                [id]
+            );
+            const effectiveTipoEquipo = tipoEquipo ?? current?.tipo_equipo ?? 'general';
+            let jsonDatos: string | null;
+            if (typeof datosTecnicos === 'undefined') {
+                if (current?.datos_tecnicos === null || typeof current?.datos_tecnicos === 'undefined') jsonDatos = null;
+                else if (typeof current.datos_tecnicos === 'string') jsonDatos = current.datos_tecnicos;
+                else jsonDatos = JSON.stringify(current.datos_tecnicos);
+            } else {
+                jsonDatos = datosTecnicos === null ? null : JSON.stringify(datosTecnicos);
+            }
+            this.db.run(
+                'UPDATE actividades SET direccion_id = ?, incidencia_id = ?, descripcion = ?, tipo_equipo = ?, datos_tecnicos = ?, updated_at = ? WHERE id = ?',
+                [direccionId, incidenciaId, descripcion, effectiveTipoEquipo, jsonDatos, now, id]
+            );
+        }
+
         this.db.save();
     }
 
@@ -203,7 +240,8 @@ export class ActividadesAdapter {
     public getActividadConLog(id: string): { actividad: ActividadCompleta | undefined; logs: any[] } {
         const actividad = this.db.get<ActividadCompleta>(`
             SELECT a.id, d.nombre as direccion, i.nombre as incidencia, a.descripcion,
-                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at
+                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at,
+                   a.tipo_equipo, a.datos_tecnicos
             FROM actividades a
             JOIN direcciones d ON a.direccion_id = d.id AND d.deleted_at IS NULL
             JOIN incidencias i ON a.incidencia_id = i.id AND i.deleted_at IS NULL
@@ -213,13 +251,15 @@ export class ActividadesAdapter {
             'SELECT campo, valor_anterior, valor_nuevo, created_at FROM actividad_log WHERE actividad_id = ? ORDER BY created_at ASC',
             [id]
         );
+        if (actividad) actividad.datos_tecnicos = this._parseDatosTecnicos((actividad as any).datos_tecnicos);
         return { actividad, logs };
     }
 
     public getPorRango(inicio: string, fin: string): Record<string, ActividadCompleta[]> {
-        const rows = this.db.all<ActividadCompleta>(`
+        const rows = this.db.all<any>(`
             SELECT a.id, d.nombre as direccion, i.nombre as incidencia, a.descripcion,
-                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at
+                   a.created_at, a.direccion_id, a.incidencia_id, a.estado, a.prioridad, a.resolved_at,
+                   a.tipo_equipo, a.datos_tecnicos
             FROM actividades a
             JOIN direcciones d ON a.direccion_id = d.id AND d.deleted_at IS NULL
             JOIN incidencias i ON a.incidencia_id = i.id AND i.deleted_at IS NULL
@@ -227,8 +267,9 @@ export class ActividadesAdapter {
             ORDER BY a.created_at DESC
         `, [inicio, fin]);
 
+        const mapped = rows.map((r: any) => ({ ...r, datos_tecnicos: this._parseDatosTecnicos(r.datos_tecnicos) }));
         const grouped: Record<string, ActividadCompleta[]> = {};
-        for (const row of rows) {
+        for (const row of mapped) {
             const fecha = row.created_at.split('T')[0];
             if (!grouped[fecha]) grouped[fecha] = [];
             grouped[fecha].push(row);

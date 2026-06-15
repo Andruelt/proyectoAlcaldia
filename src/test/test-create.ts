@@ -2,8 +2,8 @@ import { app } from 'electron';
 import * as path from 'path';
 import * as fs from 'fs';
 import { DatabaseAdapter } from '../database/database';
-import { DireccionesAdapter } from '../database/direcciones-adapter';
-import { IncidenciasAdapter } from '../database/incidencias-adapter';
+import { createDireccionesAdapter } from '../database/direcciones-adapter';
+import { createIncidenciasAdapter } from '../database/direcciones-adapter';
 import { ActividadesAdapter } from '../database/actividades-adapter';
 
 async function runTests(): Promise<void> {
@@ -25,8 +25,8 @@ async function runTests(): Promise<void> {
         await db.connect('test_create.db');
         db.initTables();
 
-        const direcciones = new DireccionesAdapter(db);
-        const incidencias = new IncidenciasAdapter(db);
+        const direcciones = createDireccionesAdapter(db);
+        const incidencias = createIncidenciasAdapter(db);
         const actividades = new ActividadesAdapter(db);
 
         console.log('\n=== Create: Direcciones ===');

@@ -30,14 +30,15 @@ export class NavMenuItem extends BaseComponent {
                     color: ${t.colors.textSecondary}; font-weight: ${t.font.weightNormal};
                     transition: all 0.15s ease; cursor: pointer;
                     font-family: ${t.font.family}; background: transparent; font-size: ${t.font.sizeMd};
+                    white-space: nowrap;
                 }
                 .nav-item:hover { background: ${t.colors.border}; color: ${t.colors.text}; }
-                .nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: inherit; }
+                .nav-icon { display: flex; align-items: center; justify-content: center; width: 20px; height: 20px; color: inherit; flex-shrink: 0; }
                 .nav-text { font-size: ${t.font.sizeMd}; }
             </style>
-            <button class="nav-item" data-view="${view}">
+            <button class="nav-item" part="nav-item" data-view="${view}">
                 <span class="nav-icon">${svgIcon}</span>
-                <span class="nav-text">${text}</span>
+                <span class="nav-text" part="text">${text}</span>
             </button>`;
 
         this.shadowRoot.querySelector('.nav-item').addEventListener('click', () => {
