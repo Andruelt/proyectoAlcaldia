@@ -26,7 +26,7 @@ export class ModalDialog extends BaseComponent {
                 .backdrop {
                     position: absolute;
                     inset: 0;
-                    background: rgba(15, 23, 42, 0.45);
+                    background: transparent;
                     animation: modalFadeIn 0.2s ease;
                 }
                 :host([open]) .backdrop {

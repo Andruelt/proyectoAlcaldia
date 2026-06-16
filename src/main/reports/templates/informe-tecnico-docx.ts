@@ -9,6 +9,7 @@ import {
     WidthType,
     AlignmentType,
     BorderStyle,
+    VerticalAlign,
 } from 'docx';
 import { formatFechaCorta, formatFechaLarga, todayIso } from '../date-format';
 import type { ReportContext } from '../types';
@@ -31,22 +32,17 @@ const NO_BORDER = {
 };
 
 const cell = (children: Paragraph[], opts: { width?: number; bold?: boolean; bg?: string; vmerge?: 'restart' | 'continue'; noBorder?: boolean } = {}): TableCell => {
+    const CELL_MARGINS = { top: 120, bottom: 120, left: 150, right: 150 };
     if (opts.noBorder) {
         return new TableCell({
             children,
             width: opts.width ? { size: opts.width, type: WidthType.PERCENTAGE } : undefined,
-            verticalAlign: 'center',
+            verticalAlign: VerticalAlign.CENTER,
             borders: { top: NO_BORDER, bottom: NO_BORDER, left: NO_BORDER, right: NO_BORDER },
+            margins: CELL_MARGINS,
         });
     }
-    const borders = opts.bg ? {
-        top: BORDER(),
-        bottom: BORDER(),
-        left: BORDER(),
-        right: BORDER(),
-        insideHorizontal: BORDER(),
-        insideVertical: BORDER(),
-    } : {
+    const borders = {
         top: BORDER(),
         bottom: BORDER(),
         left: BORDER(),
@@ -56,14 +52,15 @@ const cell = (children: Paragraph[], opts: { width?: number; bold?: boolean; bg?
         children,
         width: opts.width ? { size: opts.width, type: WidthType.PERCENTAGE } : undefined,
         shading: opts.bg ? { fill: opts.bg, type: 'clear' } : undefined,
-        verticalAlign: 'center',
+        verticalAlign: VerticalAlign.CENTER,
         borders,
+        margins: CELL_MARGINS,
     });
 };
 
 const p = (text: string, opts: { bold?: boolean; size?: number; align?: typeof AlignmentType[keyof typeof AlignmentType]; spacing?: { before?: number; after?: number; line?: number } } = {}): Paragraph => {
     return new Paragraph({
-        children: [new TextRun({ text, bold: opts.bold, size: opts.size || 22 })],
+        children: [new TextRun({ text, bold: opts.bold, size: opts.size || 17 })],
         alignment: opts.align,
         spacing: { before: opts.spacing?.before || 0, after: opts.spacing?.after || 0, line: opts.spacing?.line || 280 },
     });
@@ -115,8 +112,8 @@ const buildSpecsTable = (raw: unknown, diagnostico: string): Table | null => {
         }
         rows.push(new TableRow({
             children: [
-                cell([p(String(nombre), { size: 20 })]),
-                cell([p(String(operativo), { size: 20 })]),
+                cell([p(String(nombre), { size: 17 })]),
+                cell([p(String(operativo), { size: 17 })]),
             ],
         }));
     }
@@ -124,8 +121,8 @@ const buildSpecsTable = (raw: unknown, diagnostico: string): Table | null => {
     if (diagnostico) {
         rows.push(new TableRow({
             children: [
-                cell([p('Diagnóstico', { bold: true })], { width: 25, bg: 'F1F5F9' }),
-                cell([p(diagnostico)], { width: 75 }),
+                cell([p('Diagnóstico', { bold: true })], { width: 70, bg: 'F1F5F9' }),
+                cell([p(diagnostico)], { width: 30 }),
             ],
         }));
     }
@@ -148,22 +145,31 @@ const buildDynamicComponentesTable = (componentes: unknown, diagnostico: string)
         const chunk = items.slice(i, i + CHUNK);
         const cells: TableCell[] = chunk.map(item =>
             cell([
-                p(item.nombre || '', { bold: true, size: 18, align: AlignmentType.CENTER }),
-                p(item.estado || '', { size: 20, align: AlignmentType.CENTER }),
+                p(item.nombre || '', { bold: true, size: 16, align: AlignmentType.CENTER }),
+                p(item.estado || '', { size: 17, align: AlignmentType.CENTER }),
             ], { width: 25 })
         );
-        // Fill remaining cells with no border
+        // Fill remaining cells
         while (cells.length < CHUNK) {
-            cells.push(cell([p('')], { width: 25, noBorder: true }));
+            cells.push(cell([p('')], { width: 25 }));
         }
         rows.push(new TableRow({ children: cells }));
     }
 
     if (diagnostico) {
+        const SPAN = CHUNK;
         rows.push(new TableRow({
             children: [
-                cell([p('Diagnóstico', { bold: true })], { width: 25, bg: 'F1F5F9' }),
-                cell([p(diagnostico)], { width: 75 }),
+                new TableCell({
+                    columnSpan: SPAN,
+                    children: [
+                        p('Diagnóstico: ' + diagnostico, { bold: true, size: 16 }),
+                    ],
+                    shading: { fill: 'F1F5F9', type: 'clear' },
+                    verticalAlign: VerticalAlign.CENTER,
+                    borders: { top: BORDER(), bottom: BORDER(), left: BORDER(), right: BORDER() },
+                    margins: { top: 120, bottom: 120, left: 150, right: 150 },
+                }),
             ],
         }));
     }
@@ -172,13 +178,13 @@ const buildDynamicComponentesTable = (componentes: unknown, diagnostico: string)
 };
 
 const logoParagraph = (): Paragraph[] => {
-    const size = 20;
+    const size = 17;
     return [
         new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { before: 0, after: 20 },
             children: [
-                new TextRun({ text: 'Infante', bold: true, italics: true, size: 32, color: '1B5E20', font: 'Georgia' }),
+                new TextRun({ text: 'Infante', bold: true, italics: true, size: 26, color: '1B5E20', font: 'Georgia' }),
             ],
         }),
         new Paragraph({
@@ -248,7 +254,7 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
                             new Paragraph({
                                 alignment: AlignmentType.RIGHT,
                                 spacing: { before: 0, after: 0, line: 280 },
-                                children: [new TextRun({ text: 'Valle de la Pascua: ', size: 22 }), new TextRun({ text: fechaCorta, size: 22, bold: true })],
+                                children: [new TextRun({ text: 'Valle de la Pascua: ', size: 17 }), new TextRun({ text: fechaCorta, size: 17, bold: true })],
                             }),
                         ],
                     }),
@@ -263,16 +269,16 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
             new TableRow({
                 tableHeader: true,
                 children: [
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Código del Bien', bold: true, size: 20 })] })], { width: 25, bg: 'F1F5F9' }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Descripción', bold: true, size: 20 })] })], { width: 38, bg: 'F1F5F9' }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Requerimiento', bold: true, size: 20 })] })], { width: 37, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Código del Bien', bold: true, size: 17 })] })], { width: 25, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Descripción', bold: true, size: 17 })] })], { width: 38, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'Requerimiento', bold: true, size: 17 })] })], { width: 37, bg: 'F1F5F9' }),
                 ],
             }),
             new TableRow({
                 children: [
-                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'codigoBien'), size: 20 })] })], { width: 25 }),
-                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'descripcion'), size: 20 })] })], { width: 38 }),
-                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'requerimiento'), size: 20 })] })], { width: 37 }),
+                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'codigoBien'), size: 17 })] })], { width: 25 }),
+                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'descripcion'), size: 17 })] })], { width: 38 }),
+                    cell([new Paragraph({ children: [new TextRun({ text: val(data, 'requerimiento'), size: 17 })] })], { width: 37 }),
                 ],
             }),
         ],
@@ -286,8 +292,8 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
         rows: [
             new TableRow({
                 children: [
-                    cell([new Paragraph({ children: [new TextRun({ text: 'Diagnóstico', bold: true, size: 20 })] })], { width: 25 }),
-                    cell([new Paragraph({ children: [new TextRun({ text: diagnostico, size: 20 })] })], { width: 75 }),
+                    cell([new Paragraph({ children: [new TextRun({ text: 'Diagnóstico', bold: true, size: 17 })] })], { width: 25 }),
+                    cell([new Paragraph({ children: [new TextRun({ text: diagnostico, size: 17 })] })], { width: 75 }),
                 ],
             }),
         ],
@@ -299,16 +305,16 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
             new TableRow({
                 tableHeader: true,
                 children: [
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma1', 'INFORMATICA Y SISTEMA'), bold: true, size: 20 })] })], { width: 33, bg: 'F1F5F9' }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma2', 'DIVISION DE REGISTRO Y CONTROL DE BIENES'), bold: true, size: 20 })] })], { width: 34, bg: 'F1F5F9' }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma3', 'RECIBIDO POR:'), bold: true, size: 20 })] })], { width: 33, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma1', 'INFORMATICA Y SISTEMA'), bold: true, size: 17 })] })], { width: 33, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma2', 'DIVISION DE REGISTRO Y CONTROL DE BIENES'), bold: true, size: 17 })] })], { width: 34, bg: 'F1F5F9' }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: val(data, 'firma3', 'RECIBIDO POR:'), bold: true, size: 17 })] })], { width: 33, bg: 'F1F5F9' }),
                 ],
             }),
             new TableRow({
                 children: [
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 20 })] })], { width: 33 }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 20 })] })], { width: 34 }),
-                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 20 })] })], { width: 33 }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 17 })] })], { width: 33 }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 17 })] })], { width: 34 }),
+                    cell([new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: 'FIRMA: _______________', size: 17 })] })], { width: 33 }),
                 ],
             }),
         ],
@@ -322,24 +328,24 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
         new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { before: 360, after: 60 },
-            children: [new TextRun({ text: 'INFORME TÉCNICO', bold: true, size: 40 })],
+            children: [new TextRun({ text: 'INFORME TÉCNICO', bold: true, size: 32 })],
         }),
         new Paragraph({
             alignment: AlignmentType.RIGHT,
             spacing: { before: 0, after: 240 },
-            children: [new TextRun({ text: `N° ${val(data, 'numeroInforme', '—')}`, bold: true, size: 24 })],
+            children: [new TextRun({ text: `N° ${val(data, 'numeroInforme', '—')}`, bold: true, size: 20 })],
         }),
         new Paragraph({
             spacing: { before: 0, after: 40 },
-            children: [new TextRun({ text: 'CIUDADANO:', bold: true, size: 22 })],
+            children: [new TextRun({ text: 'CIUDADANO:', bold: true, size: 17 })],
         }),
-        new Paragraph({ spacing: { before: 0, after: 40 }, children: [new TextRun({ text: val(data, 'destinatarioNombre'), bold: true, size: 22 })] }),
-        new Paragraph({ spacing: { before: 0, after: 40 }, children: [new TextRun({ text: val(data, 'destinatarioCargo'), bold: true, size: 22 })] }),
-        new Paragraph({ spacing: { before: 0, after: 240 }, children: [new TextRun({ text: val(data, 'destinatarioDpto'), bold: true, size: 22 })] }),
+        new Paragraph({ spacing: { before: 0, after: 40 }, children: [new TextRun({ text: val(data, 'destinatarioNombre'), bold: true, size: 17 })] }),
+        new Paragraph({ spacing: { before: 0, after: 40 }, children: [new TextRun({ text: val(data, 'destinatarioCargo'), bold: true, size: 17 })] }),
+        new Paragraph({ spacing: { before: 0, after: 240 }, children: [new TextRun({ text: val(data, 'destinatarioDpto'), bold: true, size: 17 })] }),
         new Paragraph({
             alignment: AlignmentType.CENTER,
             spacing: { before: 0, after: 240, line: 320 },
-            children: [new TextRun({ text: 'Luego de extenderle un cordial saludo me dirijo a usted con la finalidad de dar a conocer el diagnóstico obtenido de la revisión de los siguientes equipos:', size: 22 })],
+            children: [new TextRun({ text: 'Luego de extenderle un cordial saludo me dirijo a usted con la finalidad de dar a conocer el diagnóstico obtenido de la revisión de los siguientes equipos:', size: 17 })],
         }),
         equipmentTable,
         ...(componentesTable ? [new Paragraph({ text: '', spacing: { before: 0, after: 0 } }), componentesTable] : []),
@@ -348,7 +354,7 @@ export function InformeTecnicoDocx(data: Record<string, unknown>, _ctx: ReportCo
         new Paragraph({ text: '', spacing: { before: 0, after: 0 } }),
         new Paragraph({
             spacing: { before: 240, after: 240 },
-            children: [new TextRun({ text: 'Sin más a que hacer referencia.', bold: true, size: 22 })],
+            children: [new TextRun({ text: 'Sin más a que hacer referencia.', bold: true, size: 17 })],
         }),
         new Paragraph({ text: '', spacing: { before: 0, after: 0 } }),
         new Paragraph({ text: '', spacing: { before: 0, after: 0 } }),

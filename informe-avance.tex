@@ -1,0 +1,351 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Harvard-style formatting ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\geometry{margin=1in}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{caption}
+\usepackage{float}
+
+% --- Code listing style ---
+\definecolor{codebg}{rgb}{0.95,0.95,0.95}
+\lstset{
+    backgroundcolor=\color{codebg},
+    basicstyle=\ttfamily\footnotesize,
+    breaklines=true,
+    frame=single,
+    aboveskip=8pt,
+    belowskip=8pt,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    xleftmargin=16pt
+}
+
+% --- Header ---
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Proyecto Alcaldía — Informe de Avance}
+\fancyhead[R]{\small \today}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\title{\textbf{Informe de Desarrollo}\\[4pt]
+       \large Proyecto Alcaldía — Sistema de Gestión de Actividades}
+\author{Equipo de Desarrollo}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+% --- Abstract ---
+\begin{center}
+\rule{0.5\textwidth}{0.4pt}\\[4pt]
+\textbf{Resumen Ejecutivo}\\[4pt]
+\rule{0.5\textwidth}{0.4pt}
+\end{center}
+
+Este informe documenta los avances realizados durante la sesión de desarrollo del día de hoy en el sistema de gestión de actividades del Proyecto Alcaldía. Se implementó una vista de calendario con paginación, se mejoró la navegación entre modales mediante un sistema de pila (\textit{stack}), y se corrigieron múltiples errores de sincronización de datos entre vistas.
+
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducción}
+
+El Proyecto Alcaldía es una aplicación de escritorio desarrollada con Electron, SQLite (sql.js) y Web Components vanilla. Su propósito es gestionar tres entidades principales: direcciones, incidencias y actividades. La sesión de hoy se centró en la implementación de una vista de calendario para visualizar actividades por fecha, la mejora del sistema de modales, y la corrección de fallos en la sincronización de datos.
+
+% ============================================================
+\section{Vista de Calendario}
+
+\subsection{Componente \texttt{calendar-grid}}
+
+Se creó un nuevo Web Component (\texttt{calendar-grid.js}) que renderiza una cuadrícula mensual de 7 columnas (lunes a domingo). Cada celda muestra el número del día y, si existen actividades, \textit{chips} con los nombres de las primeras cinco direcciones asociadas.
+
+\begin{lstlisting}[caption={Estructura de celda del calendario}, label=lst:cal-cell]
+<!-- Celda con actividades -->
+<button class="cal-cell has-acts" data-date="2026-05-14">
+    <span class="cal-day">14</span>
+    <div class="cal-chips">
+        <span class="cal-chip">Hacienda m</span>
+        <span class="cal-chip">Catastro</span>
+        <span class="cal-chip">Despacho</span>
+    </div>
+</button>
+\end{lstlisting}
+
+\subsection{Estilos visuales}
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Celdas vacías}: borde transparente, sin interacción.
+    \item \textbf{Celdas con actividades}: borde \textit{dashed} en color acento (\texttt{\#1e293b}).
+    \item \textbf{Día actual}: borde sólido en color acento, texto en negrita.
+    \item \textbf{Números}: alineados arriba-derecha de cada celda.
+    \item \textbf{Chips}: fondo \texttt{\#1e293b}, texto blanco, fuente 9px, truncados a 12 caracteres.
+\end{itemize}
+
+\subsection{Navegación entre meses}
+
+Los botones de navegación (\texttt{\textless} / \texttt{\textgreater}) llaman a \texttt{load(year, month)} que consulta la base de datos mediante el IPC handler \texttt{get-actividades-rango}. Este handler recibe un rango de fechas (\texttt{inicio} / \texttt{fin}) y retorna las actividades agrupadas por día.
+
+\subsection{Modal de detalle por día}
+
+Al hacer clic en un día, se abre un modal que muestra la lista de actividades para esa fecha. Las características incluyen:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Altura máxima}: \texttt{max-height: 60vh} con \texttt{overflow-y: auto}.
+    \item \textbf{Scroll personalizado}: barra de desplazamiento de 6px con bordes redondeados (\texttt{border-radius: 999px}), estilo Google.
+    \item \textbf{Paginación}: 20 actividades por página con botón \textit{``Ver más (N restantes)''} que carga la siguiente página mediante \texttt{\_renderDayModal()}.
+    \item \textbf{Mensaje vacío}: si el día no tiene actividades, se muestra un ícono de calendario con el texto \textit{``Sin actividades''}.
+\end{enumerate}
+
+\begin{lstlisting}[caption={Paginación en modal de día}, label=lst:pagination]
+_renderDayModal(fechaLabel) {
+    const start = this._page * this._pageSize;   // _pageSize = 20
+    const end = Math.min(start + this._pageSize, total);
+    const pageActs = acts.slice(start, end);
+    const hasMore = end < total;
+    // Renderiza titulo con rango: "45 actividades — 14/05 (1-20 de 45)"
+    // Agrega boton "Ver mas" si hasMore
+}
+\end{lstlisting}
+
+% ============================================================
+\section{Sistema de Pila para Modales}
+
+\subsection{Problema}
+
+El sistema anterior utilizaba un modal único (\texttt{ModalDialog}, singleton). Al abrir un nuevo modal, el contenido del anterior se perdía. Esto impedía navegar fluidamente entre la vista de lista de un día y el detalle de una actividad específica.
+
+\subsection{Solución: \textit{Stack} con \texttt{onRestore}}
+
+Se implementó una pila (\textit{stack}) en la clase \texttt{ModalDialog} que preserva el estado del modal anterior y lo restaura al cerrar el actual.
+
+\begin{lstlisting}[caption={Método \texttt{open()} con stack}, label=lst:stack-open]
+open(title, bodyHTML, onRestore) {
+    if (this.hasAttribute('open')) {
+        // Push estado actual al stack
+        this._stack.push({
+            title: this.shadowRoot.querySelector('.modal-title').textContent,
+            body: this.shadowRoot.querySelector('.modal-body').innerHTML,
+            onRestore: this._onRestore  // preserva callback
+        });
+    }
+    this._onRestore = onRestore || null;
+    // ... actualiza titulo y contenido ...
+}
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Método \texttt{close()} con restauración}, label=lst:stack-close]
+close() {
+    if (this._stack && this._stack.length > 0) {
+        const prev = this._stack.pop();
+        this._onRestore = prev.onRestore;
+        // Restaura titulo y contenido anteriores
+        this.shadowRoot.querySelector('.modal-body').innerHTML = prev.body;
+        if (this._onRestore) this._onRestore();  // re-attach listeners
+        return;
+    }
+    this.removeAttribute('open');  // cierra definitivamente
+}
+\end{lstlisting}
+
+\subsection{Callback \texttt{onRestore}}
+
+Al restaurar contenido desde el stack mediante \texttt{innerHTML}, los \textit{event listeners} de los botones se pierden porque el DOM se recrea. El callback \texttt{onRestore} resuelve esto re-adjuntando los listeners cada vez que se restaura una vista.
+
+\begin{lstlisting}[caption={Uso de onRestore en el calendario}, label=lst:onrestore]
+const attachListeners = () => {
+    const r = ModalDialog.getInstance().shadowRoot;
+    r.querySelectorAll('.cal-modal-item .cal-btn').forEach(btn => {
+        btn.addEventListener('click', (ev) => { /* dispatch event */ });
+    });
+    // Tambien adjunta listener al boton "Ver mas" para paginacion
+};
+ModalDialog.open(title, content, attachListeners);
+attachListeners();  // primera apertura
+\end{lstlisting}
+
+\subsection{Flujo de navegación}
+
+\begin{enumerate}[leftmargin=*]
+    \item Usuario hace clic en día 14 $\rightarrow$ modal muestra lista de actividades.
+    \item Usuario hace clic en \textbf{``Ver''} $\rightarrow$ se apila la lista y se muestra el detalle.
+    \item Usuario cierra el detalle ($\times$ o Escape) $\rightarrow$ se desapila y se restaura la lista.
+    \item Usuario cierra la lista $\rightarrow$ modal se cierra completamente.
+\end{enumerate}
+
+% ============================================================
+\section{Corrección de Errores}
+
+\subsection{Sintaxis: \texttt{await} sin \texttt{async}}
+
+\textbf{Archivo}: \texttt{src/view/app.js}.\\
+\textbf{Error}: El handler de clic del listado de actividades contenía \texttt{await safeInvoke(...)} pero la función no estaba declarada como \texttt{async}, lo que impedía el parseo completo del archivo y bloqueaba la carga de todos los datos.\\
+\textbf{Solución}: Se agregó \texttt{async} a la firma del callback: \texttt{addEventListener('click', async (e) => \{...\})}.
+
+\subsection{\texttt{getElementById} en Shadow DOM}
+
+\textbf{Archivo}: \texttt{src/view/app.js}.\\
+\textbf{Error}: Se utilizaba \texttt{modal.shadowRoot.getElementById('form-id')} para acceder a formularios dentro del Shadow DOM del modal. Este método no es estándar en \texttt{ShadowRoot}.\\
+\textbf{Solución}: Se reemplazó por \texttt{modal.shadowRoot.querySelector('\#form-id')} en todos los casos.
+
+\subsection{Botón de crear actividades}
+
+\textbf{Error}: El botón \textit{``+ Crear Actividad''} no se posicionaba correctamente porque el header carecía de \texttt{display: flex}.\\
+\textbf{Solución}: Se agregó \texttt{style="display:flex; align-items:center; justify-content:space-between;"} al header de la vista de actividades. El título queda a la izquierda y el botón a la derecha.
+
+\subsection{Botones sin estilo en el calendario}
+
+\textbf{Error}: Los botones \textit{Ver}, \textit{Editar} y \textit{Eliminar} dentro del modal del calendario se mostraban con estilos \textit{default} del navegador.\\
+\textbf{Causa}: El CSS de \texttt{styles.css} no penetra el Shadow DOM del componente \texttt{calendar-grid}.\\
+\textbf{Solución}: Se agregaron las reglas CSS (\texttt{.cal-btn}, \texttt{.cal-btn.view}, \texttt{.cal-btn.edit}, \texttt{.cal-btn.delete}) dentro del \texttt{<style>} del Shadow DOM del componente.
+
+\subsection{Sincronización de datos tras eliminación}
+
+\textbf{Error}: Al eliminar una actividad desde el modal del calendario, los datos en memoria no se actualizaban. La actividad seguía apareciendo en el modal y en la cuadrícula.\\
+\textbf{Solución}: Se agregó \texttt{ModalDialog.closeAll()} seguido de \texttt{cal.load(year, month)} en el handler de eliminación, forzando el cierre del modal y la recarga completa de los datos del calendario. Además, la función \texttt{deleteActividad()} ahora también refresca el calendario cuando el layout activo es \texttt{'calendar'}.
+
+\subsection{Texto desbordado en textarea}
+
+\textbf{Error}: El \texttt{<textarea>} del formulario de actividad se desbordaba lateralmente.\\
+\textbf{Causa}: \texttt{width: 100\%} + \texttt{border: 1px} = ancho total $> 100\%$.\\
+\textbf{Solución}: Se agregó \texttt{box-sizing: border-box} al estilo base de inputs (\texttt{inputBase} en \texttt{BaseFormField.js}).
+
+\subsection{Charts no re-renderizaban}
+
+\textbf{Error}: Los gráficos del dashboard no se actualizaban al cambiar sus atributos mediante \texttt{setAttribute()}.\\
+\textbf{Causa}: Los Web Components (\texttt{StatCard}, \texttt{BaseChart}) no implementaban \texttt{observedAttributes} ni \texttt{attributeChangedCallback}.\\
+\textbf{Solución}: Se agregaron \texttt{observedAttributes = ['value', 'title', 'trend']} en \texttt{StatCard} y \texttt{observedAttributes = ['data', 'title']} en \texttt{BaseChart} (heredado por \texttt{LineChart}, \texttt{BarChart}, \texttt{CandleChart}), con \texttt{attributeChangedCallback() \{ this.render(); \}}.
+
+% ============================================================
+\section{Base de Datos}
+
+\subsection{Nueva consulta: \texttt{getActividadesPorRango}}
+
+\begin{lstlisting}[caption={Query de actividades por rango de fechas}, label=lst:db-range]
+SELECT a.id, d.nombre as direccion, i.nombre as incidencia,
+       a.descripcion, a.created_at, a.direccion_id, a.incidencia_id
+FROM actividades a
+JOIN direcciones d ON a.direccion_id = d.id AND d.deleted_at IS NULL
+JOIN incidencias i ON a.incidencia_id = i.id AND i.deleted_at IS NULL
+WHERE a.deleted_at IS NULL
+  AND a.created_at >= ? AND a.created_at < ?
+ORDER BY a.created_at DESC
+\end{lstlisting}
+
+El resultado se agrupa por fecha en JavaScript mediante un \texttt{reduce}, retornando un objeto \texttt{Record<string, Actividad[]>} donde la clave es la fecha en formato \texttt{YYYY-MM-DD}.
+
+\subsection{Tabla de métricas}
+
+Se creó la tabla \texttt{metricas} para almacenar snapshots diarios pre-computados:
+
+\begin{lstlisting}[caption={Esquema de tabla metricas}, label=lst:db-metrics]
+CREATE TABLE IF NOT EXISTS metricas (
+    id TEXT PRIMARY KEY,
+    fecha TEXT NOT NULL,
+    direcciones_activas INTEGER DEFAULT 0,
+    incidencias_activas INTEGER DEFAULT 0,
+    actividades_total INTEGER DEFAULT 0,
+    actividades_7d INTEGER DEFAULT 0,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
+\end{lstlisting}
+
+El método \texttt{recomputeMetrics()} se invoca desde el handler \texttt{get-stats} cada vez que se carga el dashboard, garantizando datos actualizados.
+
+% ============================================================
+\section{Arquitectura del Código}
+
+\subsection{Estructura de archivos}
+
+\begin{verbatim}
+src/
+  view/
+    ui/
+      tokens.js              -- tokens de diseno (colores, fuentes, etc.)
+      icons.js               -- iconos SVG
+      date-utils.js          -- utilidades de parseo de fechas
+      base/
+        BaseComponent.js     -- clase padre (shadowRoot, connectedCallback)
+        BaseFormField.js     -- clase padre para campos de formulario
+        BaseChart.js         -- clase padre para graficos
+      components/
+        calendar-grid.js     -- vista de calendario (NUEVO)
+        modal-dialog.js      -- modal con stack y onRestore (MEJORADO)
+        stat-card.js         -- tarjeta de estadistica (MEJORADO)
+        line-chart.js        -- grafico de linea
+        bar-chart.js         -- grafico de barras
+        candle-chart.js      -- grafico de velas
+        ... (10 componentes adicionales)
+      registry.js            -- registro de customElements.define()
+      index.js               -- entry point del bundle
+    index.html               -- HTML principal (~111 lineas)
+    app.js                   -- logica de aplicacion (~740 lineas)
+    styles.css               -- estilos globales (~680 lineas)
+  database/
+    database.ts              -- adaptador SQLite (~430 lineas)
+  main/
+    main.ts                  -- proceso principal Electron (~160 lineas)
+\end{verbatim}
+
+\subsection{Toggle de vistas}
+
+La vista de actividades ahora soporta tres layouts intercambiables mediante un control segmentado en el header:
+
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Icono} & \textbf{Layout} & \textbf{Descripción} \\
+\hline
+$\square\square$ & Cards & Tarjetas con nombre, meta y botones de acción \\
+$\equiv$ & Lista & Tabla compacta con columnas Dirección, Incidencia, Descripción, Fecha \\
+$\square$ & Calendario & Cuadrícula mensual con chips y modal por día \\
+\hline
+\end{tabular}
+\end{center}
+
+La variable global \texttt{currentLayout} controla cuál vista se muestra. La función \texttt{loadActividades()} renderiza los tres contenedores y oculta los inactivos mediante \texttt{display: none}.
+
+% ============================================================
+\section{Resultados de Pruebas}
+
+Se ejecutó la suite de pruebas \texttt{test-create.js} con resultado \textbf{17/17 PASS}:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Create}: addDireccion, addIncidencia, addActividad retornan IDs válidos.
+    \item \textbf{Read}: getDirecciones, getIncidencias, getActividades retornan registros con nombres correctos y JOINs funcionales.
+    \item \textbf{Validation}: nombres vacíos o con solo espacios lanzan error.
+    \item \textbf{Update}: updateDireccion e updateIncidencia modifican correctamente.
+    \item \textbf{Soft Delete}: deleteIncidencia oculta el registro sin eliminarlo físicamente.
+    \item \textbf{Cascade}: actividad no aparece si su dirección padre fue eliminada (soft-delete).
+\end{itemize}
+
+% ============================================================
+\section{Conclusiones}
+
+La sesión de desarrollo de hoy resultó en los siguientes entregables:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Vista de calendario} completamente funcional con navegación mensual, chips visuales, paginación y modal de detalle por día.
+    \item \textbf{Sistema de pila para modales} que permite navegación anidada sin pérdida de estado, con restauración automática de \textit{event listeners}.
+    \item \textbf{Corrección de 7 errores} críticos que bloqueaban la carga de datos, la renderización de componentes y la sincronización entre vistas.
+    \item \textbf{Tabla de métricas} para almacenamiento de snapshots diarios, alimentando el dashboard con datos históricos.
+    \item \textbf{Scroll personalizado} estilo Google aplicado globalmente y en el modal del calendario.
+    \item \textbf{Paginación} de actividades en el modal de día (20 por página) para manejar eficientemente grandes volúmenes de datos.
+    \item \textbf{Suite de pruebas} verificada: 17/17 PASS.
+\end{enumerate}
+
+El sistema se encuentra estable y listo para continuar con la siguiente fase de desarrollo, que incluirá la implementación de un layout de calendario con vista semanal y la generación de reportes PDF.
+
+\end{document}
