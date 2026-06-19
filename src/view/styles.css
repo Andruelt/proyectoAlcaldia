@@ -203,9 +203,12 @@ input[type="date"] { font-family: var(--font-family); color-scheme: light; }
 .tag-critica{ background: #fee2e2; color: #991b1b; }
 
 .chart-card {
-    min-height: 140px; background: var(--bg-white); border: 1px solid var(--border-color);
+    min-height: 140px; 
+    background: var(--bg-white); 
+    border: 1px solid var(--border-color);
     border-radius: var(--radius-md); padding: 16px 20px;
 }
+
 .chart-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; }
 .chart-body { font-size: 13px; color: var(--text-primary); }
 .chart-body svg { display: block; width: 100%; }

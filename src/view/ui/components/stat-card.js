@@ -42,19 +42,24 @@ export class StatCard extends BaseComponent {
 
         this.shadowRoot.innerHTML = `<style>
             :host {
-                display: inline-flex;
+                display: block;
                 width: 100%;
+                font-family: ${t.font.family};
+            }
+            .card {
+                display: flex;
                 align-items: center;
                 gap: 16px;
+                width: 100%;
                 background: ${tone.bg};
                 border: 1px solid ${tone.accent};
-                border-radius: 999px;
-                padding: 20px 26px 20px 20px;
-                font-family: ${t.font.family};
+                border-radius: 16px;
+                padding: .5rem 1rem;
+                height: 90px;
                 box-sizing: border-box;
                 transition: transform 0.15s ease, box-shadow 0.15s ease;
             }
-            :host(:hover) {
+            .card:hover {
                 transform: translateY(-1px);
                 box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
             }
@@ -99,11 +104,13 @@ export class StatCard extends BaseComponent {
                 white-space: nowrap;
             }
         </style>
-        ${iconSvg ? `<div class="icon">${iconSvg}</div>` : ''}
-        <div class="body">
-            <div class="value">${value}</div>
-            <div class="title">${title}</div>
-            ${trend ? `<div class="trend">${trend}</div>` : ''}
+        <div class="card">
+            ${iconSvg ? `<div class="icon">${iconSvg}</div>` : ''}
+            <div class="body">
+                <div class="value">${value}</div>
+                <div class="title">${title}</div>
+                ${trend ? `<div class="trend">${trend}</div>` : ''}
+            </div>
         </div>`;
     }
 }
