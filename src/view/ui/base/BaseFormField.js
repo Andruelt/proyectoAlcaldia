@@ -12,7 +12,7 @@ export const fieldStyles = `
     .form-label { font-size: ${t.font.sizeSm}; font-weight: ${t.font.weightNormal}; color: ${t.colors.textSecondary}; text-transform: uppercase; letter-spacing: 0.05em; font-family: ${t.font.family}; }
 `;
 
-export const inputBase = `box-sizing: border-box; width: 100%; padding: 8px 12px; font-family: ${t.font.family}; font-size: ${t.font.sizeSm}; color: ${t.colors.text}; background: ${t.colors.bgSecondary}; border: 1px solid ${t.colors.border}; border-radius: ${t.radius.sm}; outline: none; transition: ${t.transition};`;
+export const inputBase = `box-sizing: border-box; width: 100%; padding: 8px 12px; font-family: ${t.font.family}; font-size: ${t.font.sizeSm}; color: ${t.colors.text}; background: ${t.colors.bg}; border: 1px solid ${t.colors.border}; border-radius: ${t.radius.sm}; outline: none; transition: ${t.transition};`;
 
 export class BaseFormField extends BaseComponent {
     renderField(label, id, innerHTML, extraStyles = '') {

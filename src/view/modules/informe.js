@@ -7,6 +7,11 @@ let _selectedTemplateId = null;
 let _templates = [];
 let _format = 'pdf';
 let _previewVisible = false;
+let _preselectedActividadId = null;
+
+export function setPreselectedActividad(id) {
+    _preselectedActividadId = id;
+}
 
 function _getCtx() {
     return {
@@ -215,39 +220,50 @@ async function _openPreviewFullscreen() {
 }
 
 let _inited = false;
-export function initInformeEditor() {
-    if (_inited) return;
-    _inited = true;
+export async function initInformeEditor() {
+    if (!_inited) {
+        _inited = true;
+        await Promise.all([_loadTemplates(), _loadActividades()]);
 
-    _loadTemplates();
-    _loadActividades();
+        const btnTogglePreview = document.getElementById('btn-toggle-preview');
+        const btnClosePreview = document.getElementById('rb-preview-close');
+        const btnFullscreen = document.getElementById('rb-preview-fullscreen');
+        const btnPdf = document.getElementById('btn-generar-pdf');
+        const btnWord = document.getElementById('btn-generar-word');
+        const previewEl = document.getElementById('informe-preview');
 
-    const btnTogglePreview = document.getElementById('btn-toggle-preview');
-    const btnClosePreview = document.getElementById('rb-preview-close');
-    const btnFullscreen = document.getElementById('rb-preview-fullscreen');
-    const btnPdf = document.getElementById('btn-generar-pdf');
-    const btnWord = document.getElementById('btn-generar-word');
-    const previewEl = document.getElementById('informe-preview');
+        const selector = document.getElementById('rb-activity-selector');
+        if (selector) {
+            selector.addEventListener('change', (e) => {
+                const id = e.detail.value;
+                const act = id ? _actividades.find(a => a.id === id) : null;
+                _setActividad(act);
+            });
+        }
 
-    const selector = document.getElementById('rb-activity-selector');
-    if (selector) {
-        selector.addEventListener('change', (e) => {
-            const id = e.detail.value;
-            const act = id ? _actividades.find(a => a.id === id) : null;
-            _setActividad(act);
-        });
+        if (btnTogglePreview) btnTogglePreview.addEventListener('click', () => _setPreviewVisible(!_previewVisible));
+        if (btnClosePreview) btnClosePreview.addEventListener('click', () => ModalDialog.close());
+        if (btnFullscreen) btnFullscreen.addEventListener('click', _openPreviewFullscreen);
+
+        if (previewEl) {
+            previewEl.addEventListener('click', (e) => {
+                if (e.target.closest('.informe-doc')) _openPreviewFullscreen();
+            });
+        }
+
+        if (btnPdf) btnPdf.addEventListener('action', () => { _format = 'pdf'; _generate(); });
+        if (btnWord) btnWord.addEventListener('action', () => { _format = 'docx'; _generate(); });
     }
 
-    if (btnTogglePreview) btnTogglePreview.addEventListener('click', () => _setPreviewVisible(!_previewVisible));
-    if (btnClosePreview) btnClosePreview.addEventListener('click', () => ModalDialog.close());
-    if (btnFullscreen) btnFullscreen.addEventListener('click', _openPreviewFullscreen);
-
-    if (previewEl) {
-        previewEl.addEventListener('click', (e) => {
-            if (e.target.closest('.informe-doc')) _openPreviewFullscreen();
-        });
+    if (_preselectedActividadId) {
+        if (_actividades.length === 0) await _loadActividades();
+        const act = _actividades.find(a => a.id === _preselectedActividadId);
+        if (act) {
+            _selectedActividad = act;
+            const selector = document.getElementById('rb-activity-selector');
+            if (selector) selector.setValue(act.id);
+            _mountBuilder();
+        }
+        _preselectedActividadId = null;
     }
-
-    if (btnPdf) btnPdf.addEventListener('action', () => { _format = 'pdf'; _generate(); });
-    if (btnWord) btnWord.addEventListener('action', () => { _format = 'docx'; _generate(); });
 }

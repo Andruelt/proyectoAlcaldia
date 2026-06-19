@@ -3,6 +3,8 @@ import { escapeHtml, escapeAttr } from '../ui/utils/escape.js';
 import { iconBtn } from '../ui/utils/icons.js';
 import { openCrearActividadModal, openEditarActividadModal, openDetalleActividadModal, tagEstado } from './actividad-modal.js';
 import { refreshSelects } from './crud.js';
+import { navigate } from './router.js';
+import { setPreselectedActividad } from './informe.js';
 
 let currentLayout = 'cards';
 let _onChange = null;
@@ -139,15 +141,9 @@ export async function handleActividadAction(e, refresh) {
         return;
     }
     if (action === 'export-pdf' || action === 'export-word') {
-        Toast.info?.(`Generando ${action === 'export-pdf' ? 'PDF' : 'Word'}...`);
-        try {
-            const fn = action === 'export-pdf' ? window.electronAPI.export.pdf : window.electronAPI.export.word;
-            const result = await fn({ actividades: [actividad], filterLabel: `${actividad.direccion} — ${actividad.incidencia}` });
-            if (result?.filePath) Toast.success('Reporte guardado correctamente');
-        } catch (err) {
-            console.error(`Error exportando ${action}:`, err);
-            Toast.error('Error al exportar');
-        }
+        setPreselectedActividad(actividad.id);
+        navigate('informe');
+        return;
     }
 }
 
