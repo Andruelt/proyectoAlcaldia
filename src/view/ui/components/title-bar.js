@@ -68,18 +68,14 @@ export class TitleBar extends HTMLElement {
                 background: #bf0f1d;
                 color: #ffffff;
             }
-            .title {
-                flex: 1;
-                text-align: center;
-                font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                font-size: 12px;
-                font-weight: 600;
-                color: #475569;
-                letter-spacing: 0.02em;
+            .title-logo {
+                height: 22px;
+                width: auto;
+                object-fit: contain;
             }
         </style>
         <div class="titlebar">
-            <div class="title">Alcaldía</div>
+            <img class="title-logo" src="assets/LOGO_APP_NO_BG.png" alt="Alcaldía">
             <div class="win-controls">
                 <button class="win-btn btn-minimize" id="btn-minimize" title="Minimizar">
                     <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">

@@ -45,6 +45,7 @@ class Main {
             height: 820,
             minWidth: 1024,
             minHeight: 640,
+            icon: path.join(__dirname, '../view/assets/LOGO_APP_NO_BG.png'),
             frame: false,
             titleBarStyle: 'hidden',
             transparent: true,
