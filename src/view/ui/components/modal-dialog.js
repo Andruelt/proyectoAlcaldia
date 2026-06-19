@@ -11,7 +11,7 @@ export class ModalDialog extends BaseComponent {
     }
 
     render() {
-        this.shadowRoot.innerHTML = `<style>@import url("styles.css");</style><style>
+        this.shadowRoot.innerHTML = `<style>
                 :host {
                     display: none;
                     position: fixed;
