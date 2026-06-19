@@ -72,7 +72,7 @@ body.sidebar-collapsed .sidebar {
     min-width: 64px;
 }
 
-body.sidebar-collapsed .app-title,
+body.sidebar-collapsed .app-logo,
 body.sidebar-collapsed .sidebar-toggle span,
 body.sidebar-collapsed .sidebar-nav nav-menu-item::part(text) {
     display: none;
@@ -97,6 +97,7 @@ body.sidebar-collapsed .sidebar-toggle svg { transform: rotate(180deg); }
     gap: 12px;
 }
 .app-title { font-size: 18px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.02em; white-space: nowrap; }
+.app-logo { height: 50px; width: auto; object-fit: contain; }
 .sidebar-nav { padding: 16px 12px; display: flex; flex-direction: column; gap: 4px; flex: 1; min-height: 0; overflow-y: auto; }
 .sidebar-footer { display: none; }
 .sidebar-toggle {

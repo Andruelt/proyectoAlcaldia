@@ -43,6 +43,7 @@ export class StatCard extends BaseComponent {
         this.shadowRoot.innerHTML = `<style>
             :host {
                 display: inline-flex;
+                width: 100%;
                 align-items: center;
                 gap: 16px;
                 background: ${tone.bg};
