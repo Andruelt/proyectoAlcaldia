@@ -1,5 +1,4 @@
 import { InformeTecnicoTemplate } from '../main/reports/templates/informe-tecnico';
-import { ReporteActividadTemplate } from '../main/reports/templates/reporte-actividad';
 import { formatFechaCorta, todayIso } from '../main/reports/date-format';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -66,39 +65,5 @@ console.log('  Modo simple - PDF length:', pdfSimple.length, 'chars');
 console.log('  Modo detallado - Preview length:', previewDetallado.length, 'chars');
 console.log('  Modo detallado - PDF length:', pdfDetallado.length, 'chars');
 console.log('  Output:', outDir);
-
-const dataReporte = {
-    fecha: '2025-12-02',
-    periodo: 'Martes 02 de Diciembre de 2025',
-    resumenEjecutivo: 'Se realizó el diagnóstico del regulador REGU-0049 encontrando que no funciona por daños en sus partes electrónicas.',
-    observaciones: 'El equipo tiene 5 años de uso continuo.',
-    recomendaciones: 'Se recomienda reemplazar el regulador.',
-    tecnico: 'Juan Pérez',
-    cargoTecnico: 'Analista de Soporte',
-};
-
-const ctxReporte = {
-    fecha: formatFechaCorta('2025-12-02'),
-    numeroInforme: '',
-    actividad: {
-        id: 'abc123',
-        direccion: 'Informática',
-        incidencia: 'Reparación de equipo',
-        descripcion: 'Regulador dañado',
-        estado: 'completado',
-        prioridad: 'alta',
-        created_at: '2025-12-01T10:00:00Z',
-    },
-};
-
-const previewReporte = ReporteActividadTemplate.renderPreview(dataReporte, ctxReporte);
-const pdfReporte = ReporteActividadTemplate.renderPdfHtml(dataReporte, ctxReporte);
-
-fs.writeFileSync(path.join(outDir, 'preview-reporte-actividad.html'), previewReporte);
-fs.writeFileSync(path.join(outDir, 'pdf-reporte-actividad.html'), pdfReporte);
-
-console.log('Test Reporte de Actividad:');
-console.log('  Preview length:', previewReporte.length, 'chars');
-console.log('  PDF length:', pdfReporte.length, 'chars');
 
 console.log('\n[OK] Tests completados');

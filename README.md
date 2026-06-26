@@ -7,7 +7,7 @@ Aplicación de escritorio para gestión de actividades técnicas municipales con
 - **Dashboard** con KPIs, gráficos de barras/línea y analíticas por período.
 - **Gestión CRUD** de direcciones, incidencias y actividades (con soft-delete).
 - **Vista de actividades** en formato cards, lista o calendario.
-- **Constructor de informes** con plantillas predeterminadas (Informe Técnico oficial, Reporte de Actividad) y preview en vivo.
+- **Constructor de informes** con plantillas predeterminadas (Informe Técnico oficial) y preview en vivo.
 - **Exportación** a PDF y Word usando `docx` + render HTML para PDF.
 - **Persistencia local** con `sql.js` (archivo `alcaldia.db` en `userData`).
 - **Web Components** con Shadow DOM para UI reutilizable.

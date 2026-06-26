@@ -487,19 +487,3 @@ body.rb-show-preview .rb-shell .rb-preview-panel { display:none; }
 .informe-doc .it-firmas tbody td { border: 1px solid #cbd5e1; height: 90px; vertical-align: bottom; padding: 10px 10px 16px; text-align: center; font-weight: 700; font-size: 10.5px; }
 .informe-doc .it-firma-line { display: inline-block; }
 
-/* Reporte de Actividad */
-.informe-doc--reporte-actividad .ra-header { border-bottom: 2px solid #1e293b; padding-bottom: 14px; margin-bottom: 22px; }
-.informe-doc--reporte-actividad .ra-eyebrow { font-size: 10px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
-.informe-doc--reporte-actividad .ra-title { font-size: 22px; font-weight: 700; color: #0f172a; margin-bottom: 6px; }
-.informe-doc--reporte-actividad .ra-meta { font-size: 11px; color: #475569; }
-.informe-doc--reporte-actividad .ra-section { margin-bottom: 18px; }
-.informe-doc--reporte-actividad .ra-section-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #1e293b; margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
-.informe-doc--reporte-actividad .ra-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
-.informe-doc--reporte-actividad .ra-info-grid > div { display: flex; flex-direction: column; gap: 2px; }
-.informe-doc--reporte-actividad .ra-label { font-size: 9px; text-transform: uppercase; color: #94a3b8; letter-spacing: 0.04em; }
-.informe-doc--reporte-actividad .ra-value { font-size: 12px; color: #0f172a; font-weight: 500; }
-.informe-doc--reporte-actividad .ra-prose { font-size: 12px; line-height: 1.6; color: #334155; white-space: pre-wrap; }
-.informe-doc--reporte-actividad .ra-signature { margin-top: 36px; padding-top: 16px; }
-.informe-doc--reporte-actividad .ra-sig-label { font-size: 11px; color: #475569; margin-bottom: 24px; }
-.informe-doc--reporte-actividad .ra-sig-name { font-size: 13px; }
-.informe-doc--reporte-actividad .ra-sig-role { font-size: 11px; color: #475569; margin-top: 2px; }

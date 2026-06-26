@@ -1,8 +1,7 @@
 import { informeTecnicoTemplate } from './informe-tecnico.js';
-import { reporteActividadTemplate } from './reporte-actividad.js';
 
 export const templates = {
-    list: [informeTecnicoTemplate, reporteActividadTemplate],
+    list: [informeTecnicoTemplate],
     get(id) {
         return this.list.find(t => t.id === id);
     },
