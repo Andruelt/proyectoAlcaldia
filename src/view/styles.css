@@ -183,7 +183,6 @@ input[type="date"] { font-family: var(--font-family); color-scheme: light; }
 }
 .empty-state svg { margin-bottom: 16px; }
 
-.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
 .charts-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
 
 .tag {

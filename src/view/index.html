@@ -48,11 +48,7 @@
                         </div>
                         <tool-tip text="Actualizar"><button class="icon-btn" id="btn-refresh-dashboard" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button></tool-tip>
                     </div>
-                    <div class="stats-grid">
-                        <stat-card id="kpi-total" title="Total este período" value="0" trend="— vs período anterior" icon="activity" tone="blue"></stat-card>
-                        <stat-card id="kpi-tiempo" title="Tiempo promedio resolución" value="—" trend="— vs período anterior" icon="clock" tone="amber"></stat-card>
-                        <stat-card id="kpi-pendientes" title="Actividades pendientes" value="0" icon="pending" tone="green"></stat-card>
-                    </div>
+
                     <div class="charts-grid">
                         <div class="chart-card">
                             <div class="chart-title">Actividades por Dirección</div>
@@ -64,11 +60,12 @@
                         </div>
                     </div>
                     <div class="analytics-section" style="margin-top:32px;padding-top:24px;border-top:1px solid var(--border-color);">
-                        <h3 class="analytics-section-title" style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">Analíticas por Incidencia</h3>
-                        <div class="analytics-section-actions" style="display:flex;gap:8px;margin-bottom:16px;align-items:center;">
-                            <button-action id="btn-analytics-trimestral" text="Trimestral" variant="primary"></button-action>
-                            <button-action id="btn-analytics-semestral" text="Semestral" variant="secondary"></button-action>
-                            <button-action id="btn-analytics-anual" text="Anual" variant="secondary"></button-action>
+                        <h3 class="analytics-section-title" style="font-size:15px;font-weight:600;color:var(--text-primary);margin-bottom:16px;">Analíticas trimestrales</h3>
+                        <div id="analytics-quarter-buttons" style="display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap;">
+                            <button-action id="btn-q1" text="Ene - Mar" variant="primary"></button-action>
+                            <button-action id="btn-q2" text="Abr - Jun" variant="secondary"></button-action>
+                            <button-action id="btn-q3" text="Jul - Sep" variant="secondary"></button-action>
+                            <button-action id="btn-q4" text="Oct - Dic" variant="secondary"></button-action>
                             <tool-tip text="Actualizar"><button class="icon-btn" id="btn-refresh-analytics" type="button"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button></tool-tip>
                         </div>
                         <div id="dashboard-analytics"></div>
@@ -77,6 +74,7 @@
             </div>
 
             <div id="view-direcciones" class="page-view">
+                s
                 <header class="content-header"><h2 class="page-title">Direcciones</h2></header>
                 <div class="content-body">
                     <form class="activity-form" id="form-direccion" style="margin-bottom: 24px;">

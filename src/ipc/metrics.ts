@@ -18,8 +18,8 @@ export function registerMetricsHandlers(
     ipc.handle('get-analytics', withLogging('get-analytics', (inicio: string) => {
         return actividades.getAnalyticsPorPeriodo(inicio);
     }));
-    ipc.handle('get-kpis', withLogging('get-kpis', (args: { inicio: string; fin: string }) => {
-        return actividades.getKPIs(args.inicio, args.fin);
+    ipc.handle('get-analytics-rango', withLogging('get-analytics-rango', (args: { inicio: string; fin: string }) => {
+        return actividades.getAnalyticsPorRango(args.inicio, args.fin);
     }));
     ipc.handle('get-actividades-por-estado', withLogging('get-actividades-por-estado', () => {
         return actividades.getActividadesPorEstado();

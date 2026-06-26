@@ -11,11 +11,10 @@
     "start": "npm run build && electron .",
     "dev": "npm run build && electron .",
     "seed": "npm run build && electron dist/database/seed.js",
-    "test": "npm run build && electron dist/test/test-create.js"
-    ,
+    "test": "npm run build && electron dist/test/test-create.js",
     "test:generator": "npm run build && electron dist/test/test-generator.js"
   },
-  "author": "",
+  "author": "Josvel",
   "license": "MIT",
   "dependencies": {
     "docx": "^9.7.1",
@@ -24,6 +23,7 @@
   "devDependencies": {
     "@types/node": "^20.0.0",
     "electron": "^33.0.0",
+    "electron-builder": "^26.15.3",
     "esbuild": "^0.28.0",
     "typescript": "^5.0.0"
   }

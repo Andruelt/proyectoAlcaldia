@@ -28,33 +28,6 @@ function _calcPeriodo(periodo, inicio, fin) {
     return { fechaInicio: null, fechaFin: null };
 }
 
-function _trendArrow(pct) {
-    if (pct === 0) return '→ 0%';
-    return pct > 0 ? `▲ +${pct}%` : `▼ ${pct}%`;
-}
-
-function _fmtTiempo(h) {
-    return h < 24 ? `${h}h` : `${(h / 24).toFixed(1)}d`;
-}
-
-async function loadKPIs(fechaInicio, fechaFin) {
-    try {
-        const kpis = await safeInvoke('get-kpis', { inicio: fechaInicio, fin: fechaFin });
-        const setCard = (id, value, trend) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.setAttribute('value', value);
-                if (trend !== undefined) el.setAttribute('trend', trend);
-            }
-        };
-        setCard('kpi-total', String(kpis.totalPeriodo), `${_trendArrow(kpis.trendPercent)} vs período anterior`);
-        setCard('kpi-tiempo', kpis.tiempoPromedioHoras > 0 ? _fmtTiempo(kpis.tiempoPromedioHoras) : '—', kpis.tiempoPromedioHoras > 0 ? `${_trendArrow(kpis.trendTiempoPercent)} vs período anterior` : 'Sin datos');
-        setCard('kpi-pendientes', String(kpis.pendientes));
-    } catch (err) {
-        console.error('Error cargando KPIs:', err);
-    }
-}
-
 function _renderBarChart(containerId, data) {
     const el = document.getElementById(containerId);
     if (!el) return;
@@ -140,7 +113,7 @@ export async function loadDashboard(periodo = 'mensual', inicio = null, fin = nu
     try {
         const { fechaInicio, fechaFin } = _calcPeriodo(periodo, inicio, fin);
         if (!fechaInicio || !fechaFin) return;
-        await Promise.all([loadKPIs(fechaInicio, fechaFin), loadCharts(fechaInicio, fechaFin)]);
+        await loadCharts(fechaInicio, fechaFin);
     } catch (err) {
         console.error('Error cargando dashboard:', err);
     }

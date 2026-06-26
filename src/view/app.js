@@ -13,7 +13,7 @@ import { loadAnalytics, initAnalyticsButtons } from './modules/analytics.js';
 import { initInformeEditor } from './modules/informe.js';
 
 const VIEW_LOADERS = {
-    inicio: async () => { await loadDashboard(); await loadAnalytics(); },
+    inicio: async () => { await loadDashboard(); },
     actividades: async () => { await loadActividades(); await refreshSelects(); },
     informe: () => initInformeEditor(),
     direcciones: () => initDirecciones(),
@@ -51,6 +51,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAnalyticsButtons();
 
     await loadDashboard();
-    await loadAnalytics();
     await refreshSelects();
 });

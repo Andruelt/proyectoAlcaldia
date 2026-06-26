@@ -3,6 +3,7 @@ import { escapeHtml, escapeAttr } from '../ui/utils/escape.js';
 
 let _actividades = [];
 let _selectedActividad = null;
+let _fromScratch = false;
 let _selectedTemplateId = null;
 let _templates = [];
 let _format = 'pdf';
@@ -56,7 +57,7 @@ function _updatePreview() {
         if (previewEl) previewEl.innerHTML = '<div class="empty-state"><p>Selecciona una plantilla para ver la vista previa</p></div>';
         return;
     }
-    if (!_selectedActividad) {
+    if (!_selectedActividad && !_fromScratch) {
         previewEl.innerHTML = '<div class="empty-state"><p>Selecciona una actividad primero para ver una vista previa válida del informe.</p></div>';
         return;
     }
@@ -91,11 +92,19 @@ function _mountBuilder() {
         host.innerHTML = '';
         return;
     }
-    if (!_selectedActividad) {
-        host.innerHTML = `<div class="empty-state" style="text-align:center;padding:32px;color:#dc2626;font-size:14px;font-weight:500;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;">
-            <p>⚠️ No se ha seleccionado una actividad.</p>
-            <p style="margin-top:4px;font-size:13px;color:#b91c1c;">Selecciona una actividad en el selector superior.</p>
+    if (!_selectedActividad && !_fromScratch) {
+        host.innerHTML = `<div class="empty-state" style="text-align:center;padding:32px;font-size:14px;font-weight:500;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4;margin-bottom:12px;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p style="margin-bottom:4px;">Selecciona una actividad o crea un informe desde cero</p>
+            <p style="margin-top:16px;"><button-action id="btn-from-scratch" text="Crear informe desde cero" variant="primary"></button-action></p>
         </div>`;
+        requestAnimationFrame(() => {
+            const btn = document.getElementById('btn-from-scratch');
+            if (btn) btn.addEventListener('action', () => {
+                _fromScratch = true;
+                _mountBuilder();
+            }, { once: true });
+        });
         _updatePreview();
         return;
     }
@@ -140,6 +149,7 @@ async function _loadTemplates() {
 
 function _setActividad(act) {
     _selectedActividad = act;
+    _fromScratch = false;
     _mountBuilder();
 }
 
@@ -157,7 +167,7 @@ async function _generate() {
         Toast.error('Seleccione una plantilla');
         return;
     }
-    if (!_selectedActividad) {
+    if (!_selectedActividad && !_fromScratch) {
         Toast.error('Selecciona una actividad primero para generar el reporte');
         return;
     }

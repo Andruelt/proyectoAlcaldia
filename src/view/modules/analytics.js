@@ -1,33 +1,14 @@
 import { safeInvoke } from '../ui/utils/ipc.js';
 import { escapeHtml } from '../ui/utils/escape.js';
 
-const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+const QUARTERS = [
+    { id: 'q1', label: 'Ene - Mar', inicio: (y) => `${y}-01-01`, fin: (y) => `${y}-03-31` },
+    { id: 'q2', label: 'Abr - Jun', inicio: (y) => `${y}-04-01`, fin: (y) => `${y}-06-30` },
+    { id: 'q3', label: 'Jul - Sep', inicio: (y) => `${y}-07-01`, fin: (y) => `${y}-09-30` },
+    { id: 'q4', label: 'Oct - Dic', inicio: (y) => `${y}-10-01`, fin: (y) => `${y}-12-31` },
+];
 
-let _periodo = 'trimestral';
-let _container = null;
-let _titleEl = null;
-
-function _rangoStr(fechaInicio, finDate) {
-    const iniM = MESES[new Date(fechaInicio).getMonth()];
-    const iniY = new Date(fechaInicio).getFullYear().toString().slice(-2);
-    const finM = MESES[finDate.getMonth()];
-    const finY = finDate.getFullYear().toString().slice(-2);
-    return `${iniM} ${iniY} - ${finM} ${finY}`;
-}
-
-function _periodoCalc(periodo) {
-    const now = new Date();
-    if (periodo === 'semestral') {
-        const ini = new Date(now.getFullYear(), now.getMonth() - 6, now.getDate());
-        return { fechaInicio: ini.toISOString().split('T')[0], label: 'Semestrales' };
-    }
-    if (periodo === 'anual') {
-        const ini = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-        return { fechaInicio: ini.toISOString().split('T')[0], label: 'Anuales' };
-    }
-    const ini = new Date(now.getFullYear(), now.getMonth() - 3, now.getDate());
-    return { fechaInicio: ini.toISOString().split('T')[0], label: 'Trimestrales' };
-}
+let _currentQuarter = 0;
 
 function _ensureKeyframes() {
     if (document.getElementById('analytics-animations')) return;
@@ -40,34 +21,30 @@ function _ensureKeyframes() {
     document.head.appendChild(styleEl);
 }
 
-export async function loadAnalytics(periodo = _periodo) {
-    _container = _container || document.getElementById('dashboard-analytics');
-    _titleEl = _titleEl || document.querySelector('#view-inicio h3');
-    if (!_container) return;
+function _setActive(id) {
+    document.querySelectorAll('#analytics-quarter-buttons button-action').forEach(b => b.setAttribute('variant', 'secondary'));
+    const btn = document.getElementById(`btn-${id}`);
+    if (btn) btn.setAttribute('variant', 'primary');
+}
 
-    const { fechaInicio, label } = _periodoCalc(periodo);
-    const now = new Date();
-    const newTitle = `Analíticas ${label} (${_rangoStr(fechaInicio, now)})`;
-
-    if (_titleEl) {
-        _titleEl.textContent = newTitle;
-    }
+export async function loadAnalytics(inicio, fin) {
+    const container = document.getElementById('dashboard-analytics');
+    if (!container) return;
 
     try {
-        const data = await safeInvoke('get-analytics', fechaInicio);
+        const data = await safeInvoke('get-analytics-rango', { inicio, fin });
         const total = data.reduce((s, r) => s + r.cantidad, 0);
 
         if (!data || data.length === 0) {
-            _container.innerHTML = '<div class="empty-state"><p>No hay datos para este período</p></div>';
+            container.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="9" x2="15" y1="15" y2="15"/><line x1="12" x2="12" y1="12" y2="18"/></svg><p style="font-size:14px;font-weight:500;margin-bottom:4px;">Sin incidencias registradas</p><p style="font-size:12px;color:var(--text-tertiary);">No se encontraron incidencias en este trimestre.</p></div>';
             return;
         }
 
         _ensureKeyframes();
         const max = Math.max(...data.map(r => r.cantidad), 1);
-        const rangoStr = _rangoStr(fechaInicio, now);
 
-        _container.innerHTML = `
-            <div class="analytics-meta" style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">${rangoStr} — ${total} actividad${total !== 1 ? 'es' : ''}</div>
+        container.innerHTML = `
+            <div class="analytics-meta" style="font-size:12px;color:var(--text-tertiary);margin-bottom:12px;">${total} actividad${total !== 1 ? 'es' : ''}</div>
             ${data.map((r, i) => {
                 const pct = (r.cantidad / max * 100).toFixed(0);
                 const hue = (i * 47) % 360;
@@ -86,50 +63,43 @@ export async function loadAnalytics(periodo = _periodo) {
             }).join('')}
         `;
 
-        _container.querySelectorAll('.analytics-row').forEach((row, i) => {
+        container.querySelectorAll('.analytics-row').forEach((row, i) => {
             row.style.opacity = '0';
             row.style.transform = 'translateX(-8px)';
             row.style.animation = `analyticsRow 0.4s cubic-bezier(0.16,1,0.3,1) ${0.05 + i * 0.06}s forwards`;
         });
 
         requestAnimationFrame(() => {
-            _container.querySelectorAll('.analytics-bar').forEach(bar => {
+            container.querySelectorAll('.analytics-bar').forEach(bar => {
                 bar.style.width = bar.dataset.pct + '%';
             });
         });
     } catch (err) {
         console.error('Error cargando analytics:', err);
-        _container.innerHTML = '<div class="empty-state"><p>Error al cargar analytics</p></div>';
+        container.innerHTML = '<div class="empty-state"><svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg><p style="font-size:14px;font-weight:500;margin-bottom:4px;">Error al cargar</p><p style="font-size:12px;color:var(--text-tertiary);">No se pudieron obtener las analíticas. Intenta de nuevo.</p></div>';
     }
 }
 
 export function initAnalyticsButtons() {
-    const setActive = (id) => {
-        document.querySelectorAll('[id^="btn-analytics-"]').forEach(b => b.setAttribute('variant', 'secondary'));
-        const btn = document.getElementById(id);
-        if (btn) btn.setAttribute('variant', 'primary');
-    };
+    const now = new Date();
+    const year = now.getFullYear();
+    _currentQuarter = Math.floor(now.getMonth() / 3);
 
-    document.getElementById('btn-analytics-trimestral')?.addEventListener('action', () => {
-        _periodo = 'trimestral';
-        setActive('btn-analytics-trimestral');
-        loadAnalytics('trimestral');
-    });
-    document.getElementById('btn-analytics-semestral')?.addEventListener('action', () => {
-        _periodo = 'semestral';
-        setActive('btn-analytics-semestral');
-        loadAnalytics('semestral');
-    });
-    document.getElementById('btn-analytics-anual')?.addEventListener('action', () => {
-        _periodo = 'anual';
-        setActive('btn-analytics-anual');
-        loadAnalytics('anual');
+    QUARTERS.forEach((q, i) => {
+        const btn = document.getElementById(`btn-${q.id}`);
+        if (!btn) return;
+        btn.addEventListener('action', () => {
+            _currentQuarter = i;
+            _setActive(q.id);
+            loadAnalytics(q.inicio(year), q.fin(year));
+        });
     });
 
     const btnRefresh = document.getElementById('btn-refresh-analytics');
     if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
-            loadAnalytics(_periodo);
+            const q = QUARTERS[_currentQuarter];
+            loadAnalytics(q.inicio(year), q.fin(year));
             const svg = btnRefresh.querySelector('svg');
             if (svg) {
                 svg.style.transform = 'rotate(360deg)';
@@ -139,4 +109,8 @@ export function initAnalyticsButtons() {
             }
         });
     }
+
+    _setActive(QUARTERS[_currentQuarter].id);
+    const defaultQ = QUARTERS[_currentQuarter];
+    loadAnalytics(defaultQ.inicio(year), defaultQ.fin(year));
 }

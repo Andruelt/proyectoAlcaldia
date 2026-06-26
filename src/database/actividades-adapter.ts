@@ -23,17 +23,6 @@ export interface AnalyticsRow {
     cantidad: number;
 }
 
-export interface KPIs {
-    totalPeriodo: number;
-    totalPeriodoAnterior: number;
-    trendPercent: number;
-    pendientes: number;
-    criticos: number;
-    tiempoPromedioHoras: number;
-    tiempoPromedioAnterior: number;
-    trendTiempoPercent: number;
-}
-
 interface StatsRow {
     nombre: string;
     cantidad: number;
@@ -164,47 +153,14 @@ export class ActividadesAdapter {
         `, [inicio]);
     }
 
-    public getKPIs(inicio: string, fin: string): KPIs {
-        const durMs = new Date(fin).getTime() - new Date(inicio).getTime();
-        const inicioAnterior = new Date(new Date(inicio).getTime() - durMs).toISOString().split('T')[0];
-
-        const totalPeriodo = this.db.get<{ c: number }>(
-            'SELECT COUNT(*) as c FROM actividades WHERE deleted_at IS NULL AND created_at >= ? AND created_at < ?',
-            [inicio, fin]
-        )?.c || 0;
-
-        const totalPeriodoAnterior = this.db.get<{ c: number }>(
-            'SELECT COUNT(*) as c FROM actividades WHERE deleted_at IS NULL AND created_at >= ? AND created_at < ?',
-            [inicioAnterior, inicio]
-        )?.c || 0;
-
-        const pendientes = this.db.get<{ c: number }>(
-            "SELECT COUNT(*) as c FROM actividades WHERE deleted_at IS NULL AND estado = 'pendiente'"
-        )?.c || 0;
-
-        const criticos = this.db.get<{ c: number }>(
-            "SELECT COUNT(*) as c FROM actividades WHERE deleted_at IS NULL AND prioridad = 'critica' AND estado != 'completado'"
-        )?.c || 0;
-
-        const avgRes = this.db.get<{ avg: number | null }>(
-            "SELECT AVG((julianday(resolved_at) - julianday(created_at)) * 24) as avg FROM actividades WHERE deleted_at IS NULL AND estado = 'completado' AND resolved_at IS NOT NULL"
-        )?.avg || 0;
-
-        const avgResAnterior = this.db.get<{ avg: number | null }>(
-            "SELECT AVG((julianday(resolved_at) - julianday(created_at)) * 24) as avg FROM actividades WHERE deleted_at IS NULL AND estado = 'completado' AND resolved_at IS NOT NULL AND created_at >= ? AND created_at < ?",
-            [inicioAnterior, inicio]
-        )?.avg || 0;
-
-        const trendPercent = totalPeriodoAnterior > 0 ? Math.round((totalPeriodo - totalPeriodoAnterior) / totalPeriodoAnterior * 100) : 0;
-        const trendTiempoPercent = avgResAnterior > 0 ? Math.round((avgRes - avgResAnterior) / avgResAnterior * 100) : 0;
-
-        return {
-            totalPeriodo, totalPeriodoAnterior, trendPercent,
-            pendientes, criticos,
-            tiempoPromedioHoras: Math.round(avgRes * 10) / 10,
-            tiempoPromedioAnterior: Math.round(avgResAnterior * 10) / 10,
-            trendTiempoPercent
-        };
+    public getAnalyticsPorRango(inicio: string, fin: string): AnalyticsRow[] {
+        return this.db.all<AnalyticsRow>(`
+            SELECT i.nombre as incidencia, COUNT(*) as cantidad
+            FROM actividades a
+            JOIN incidencias i ON a.incidencia_id = i.id AND i.deleted_at IS NULL
+            WHERE a.deleted_at IS NULL AND a.created_at >= ? AND a.created_at < ?
+            GROUP BY a.incidencia_id ORDER BY cantidad DESC
+        `, [inicio, fin]);
     }
 
     public getActividadesPorEstado(): StatsRow[] {
